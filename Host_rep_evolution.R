@@ -163,21 +163,52 @@ modules_at_ages <- readRDS("R/R_objects/modules_at_ages_pp80.rds")
 #' **Plot networks**
 #' 
 
-#+ ancestral_nets, fig.width = 15, fig.height = 13, warning = F, dpi = 300
+#+ ancestral_nets, fig.width = 15, fig.height = 13, dpi = 300, warning = F
 # get the information needed from `modules_at_ages`
 matched_modules <- modules_at_ages$matched_modules$nodes_and_modules_per_age
 
-p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree) 
+pal <- scales::hue_pal()(11)[c(11,2,5,8,9,1,10,3,4,6,7)]
+  
+p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree, palette = pal)
 wrap_plots(p_nets$plot, nrow = 2)
 
-#+ extant_graph, fig.width = 8, fig.height = 6.5, warning = F, dpi = 300
+#+ extant_graph, fig.width = 8, fig.height = 6.5, dpi = 300, warning = F
 p_nets$plot[[4]]
 
-#+ plotmoduleweb, fig.width = 7, fig.height = 7, warning = F, dpi = 300
+#+ plotmoduleweb, fig.width = 7, fig.height = 7, dpi = 300, warning = F
 mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
 plotModuleWeb(mod_ext, labsize = 0.4)
 
 
+/*  # hide this for now. not necessary and $plot is wrong
+#' **Module validation**
+#' 
+#' We use modules to facilitate visualisation but sometimes they also have biological meaning. This step tells us whether the modules in the ancestral networks are robust across MCMC samples or an artifact of the summary networks.
+#' 
 
+samples_at_ages <- c(
+  lapply(at_ages$samples[1:3], function(x) x[1:3,,]),
+  at_ages$samples[4]
+)
+mod_samples <- modules_from_samples(samples_at_ages)
+
+mod_val <- support_for_modules(mod_samples, modules_at_ages)
+mod_val$plot
+mod_val$pairwise_membership
+mod_val$mean_support
+
+*/
+
+  
+#' ### Ancestral states at internal nodes of Colias phylogeny
+#' We also wanted to do a tradition ancestral state reconstruction (ASR), calculating  interaction probabilities at internal nodes of the Colias tree. And now that we have defined modules for the extant network, we can also use them to group hosts in the ASR. 
+#' 
+#' **Interaction probability at internal nodes**
+#' 
+
+#+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300, warning = F
+at_nodes <- posterior_at_nodes(history, tree, host_tree)
+p_asr <- plot_module_matrix2(matrix, at_nodes, tree, host_tree, modules = mod_ext, threshold = 0.9)
+p_asr
 
 

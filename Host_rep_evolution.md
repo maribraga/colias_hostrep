@@ -1,7 +1,7 @@
 Colias host repertoire evolution
 ================
 Mariana P Braga
-12 May, 2022
+13 May, 2022
 
 ------------------------------------------------------------------------
 
@@ -235,7 +235,9 @@ modules_at_ages <- readRDS("R/R_objects/modules_at_ages_pp80.rds")
 # get the information needed from `modules_at_ages`
 matched_modules <- modules_at_ages$matched_modules$nodes_and_modules_per_age
 
-p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree) 
+pal <- scales::hue_pal()(11)[c(11,2,5,8,9,1,10,3,4,6,7)]
+  
+p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree, palette = pal)
 wrap_plots(p_nets$plot, nrow = 2)
 ```
 
@@ -253,3 +255,20 @@ plotModuleWeb(mod_ext, labsize = 0.4)
 ```
 
 ![](Host_rep_evolution_files/figure-gfm/plotmoduleweb-1.png)<!-- -->
+
+### Ancestral states at internal nodes of Colias phylogeny
+
+We also wanted to do a tradition ancestral state reconstruction (ASR),
+calculating interaction probabilities at internal nodes of the Colias
+tree. And now that we have defined modules for the extant network, we
+can also use them to group hosts in the ASR.
+
+**Interaction probability at internal nodes**
+
+``` r
+at_nodes <- posterior_at_nodes(history, tree, host_tree)
+p_asr <- plot_module_matrix2(matrix, at_nodes, tree, host_tree, modules = mod_ext, threshold = 0.9)
+p_asr
+```
+
+![](Host_rep_evolution_files/figure-gfm/ancestral_states-1.png)<!-- -->
