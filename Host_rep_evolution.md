@@ -108,6 +108,30 @@ parameters %>%
     ## 3 gain      0.0783 0.0147
     ## 4 loss      0.922  0.0147
 
+**Bayes factor**
+
+The parameter called `beta` defines whether the phylogenetic distance
+between hosts affects the probability of gaining new hosts. When
+`beta = 0`, phylogenetic distances between hosts do not matter, hence
+all hosts are equally likely to be gained. We use Bayes factor to test
+whether the inferred `beta` is significantly different from 0. If the
+factor is \< 1, it means that the phylogenetic distances do not matter
+during host gain events.
+
+``` r
+d_prior <- dexp(x=0, rate=1)
+
+kd_beta <- kdensity(x = log1$beta, 
+                    kernel='gamma', 
+                    support=c(0,Inf), 
+                    bw = 0.02)
+max = kd_beta(0)
+
+(BF <- d_prior/max)
+```
+
+    ## [1] 0.1071303
+
 ## Character history
 
 Let’s move on to reconstruction of the history of evolution of host
