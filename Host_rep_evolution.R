@@ -63,7 +63,7 @@ gelman.diag(mcmc.list(as.mcmc(log1), as.mcmc(log2)))
 #' 
 #' Now, we can plot the posterior distributions. Since both chains have samples from the same posterior distribution, we can use only one of the log files for that.
 #' 
-#+ densities, dpi = 300
+#+ densities, out.width = '70%', dpi = 300
 parameters <- log1 %>% 
   pivot_longer(cols = 2:5, names_to = "parameter", values_to = "value")
 
@@ -123,7 +123,7 @@ effective_rate(history, tree)
 #' The first step to reconstruct ancestral networks is to define the time points during Colias diversification that we want to look at.
 #' 
 
-#+ tree, fig.width = 6, fig.height = 8, dpi = 300
+#+ tree, fig.width = 6, fig.height = 8, out.width = '80%', dpi = 300
 # visually determine interesting time points to reconstruct ancestral networks
 plot(tree, show.node.label = T, cex = 0.5)
 axisPhylo()
@@ -131,6 +131,8 @@ axisPhylo()
 # choose time points
 ages <- c(0,0.4,0.8,1.2)
 
+#' I've chosen 1.2, 0.8, and 0.4, which means 1.2 Ma, 800 and 400 thousand years ago. 
+#' 
 #' **Interaction probability at given ages**
 #' 
 #' Now we calculate the posterior probability of interaction between each host and each extant butterfly at each age in `ages`.
@@ -138,15 +140,18 @@ ages <- c(0,0.4,0.8,1.2)
 at_ages <- posterior_at_ages(history, ages, tree, host_tree)
 pp_at_ages <- at_ages$post_states
 
-#' **Summarize probabilities into networks**
+#' **Summarize probabilities into ancestral networks**
 #' 
-# Make binary or weighted networks? Discard interactions with posterior probability < threshold.
-# We chose to reconstruct weighted networks with a threshold of 
+#' Make binary or weighted networks? Discard interactions with posterior probability < threshold.
+#' We chose to reconstruct weighted networks with a threshold of 
+#' 
 
+#+ echo = FALSE
 # ##### temporary fix ######
 pp_at_ages <- lapply(pp_at_ages, abind::adrop, drop = 3)
 # ###
 
+#+ 
 summary_networks <- get_summary_network(pp_at_ages, pt = 0.8)
 
 #+ eval = FALSE
@@ -156,7 +161,7 @@ modules_at_ages <- modules_across_ages(summary_networks, tree)
 saveRDS(modules_at_ages, "R/R_objects/modules_at_ages_pp80.rds")
 
 #+ 
-# using a saved object
+# using a saved object instead
 modules_at_ages <- readRDS("R/R_objects/modules_at_ages_pp80.rds")
 
 
@@ -172,12 +177,76 @@ pal <- scales::hue_pal()(11)[c(11,2,5,8,9,1,10,3,4,6,7)]
 p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree, palette = pal)
 wrap_plots(p_nets$plot, nrow = 2)
 
+/*
 #+ extant_graph, fig.width = 8, fig.height = 6.5, dpi = 300, warning = F
 p_nets$plot[[4]]
 
 #+ plotmoduleweb, fig.width = 7, fig.height = 7, dpi = 300, warning = F
 mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
 plotModuleWeb(mod_ext, labsize = 0.4)
+*/
+
+
+#' **Plot networks as matrices**
+#' 
+#' An alternative way to visualize the networks is by plotting them as matrices.
+#' 
+
+#+ ancestral_matrices, fig.width = 12, fig.height = 14, dpi = 300, warning = F
+# get the modules for the extant network
+mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
+
+# create plots with a matrix for each age
+p_mod_matrix_ages <- list()
+
+for(i in seq_along(ages)){
+  
+  a <- ages[i]
+  
+  if(a != 0){
+    net <- summary_networks[[as.character(a)]] %>% as.matrix()
+    
+    mod_df <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+      filter(age == a) %>% 
+      select(name, module, type) 
+    
+    plot <- plot_module_matrix(net, mod_df)
+    
+  } else{
+    
+    mod_list <- listModuleInformation(mod_ext)[[2]]
+    host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
+    host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
+    mod_order <- host_mods$host
+    
+    para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
+    para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
+    mod_order_para <- para_mods$parasite
+    
+    plot <- plot_module_matrix(matrix, mod_ext, 
+                       parasite_order = mod_order_para, 
+                       host_order = mod_order)
+  }
+  
+  p_mod_matrix_ages[[i]] <- plot
+  
+}
+
+# define the layout of the plot
+layout <- c(
+  area(3,3,7,5),
+  area(3,1,7,2),
+  area(1,4,2,5),
+  area(1,2)
+)
+/*
+  plot(layout)
+*/
+
+# plot!
+wrap_plots(p_mod_matrix_ages, ncol = 2, design = layout, guides = "keep")
+
+
 
 
 /*  # hide this for now. not necessary and $plot is wrong
