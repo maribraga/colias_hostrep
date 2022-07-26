@@ -36,25 +36,31 @@ library(bipartite)
 library(tidyverse)
 
 #' ## Parameter estimates
-#' The first thing we need to do is to check that independent MCMC chains have converged to the same posterior distribution. Both chains have achieved an effective sample size ESS > 300 for every parameter.
+#' The first thing we need to do is to check that independent MCMC chains have converged to the same posterior distribution. Both chains have achieved an effective sample size ESS > 200 for every parameter.
 #'
 
 #' **log files**
 #' 
 # read files
-log1 <- read.table("./R/data/out.4.2s.beta.colias.log", header = TRUE)
-log2 <- read.table("./R/data/out.5.2s.beta.colias.log", header = TRUE)
+path_out<- "ignore/2s_new_tree/output/"
+log1 <- read.table(paste0(path_out,"out.2.2b.colias.log"), header = TRUE)
+log2 <- read.table(paste0(path_out,"out.3.2b.colias.log"), header = TRUE)
 
 # take only columns of interest
 log1 <- log1[,c(1,5:6,8:9)]
 log2 <- log2[,c(1,5:6,8:9)]
 
-# give them better names
+# give them better column names
 colnames(log1) <- colnames(log2) <- c("iteration","clock","beta", "gain", "loss")
 
 #' **Convergence test**
 #' 
-gelman.diag(mcmc.list(as.mcmc(log1), as.mcmc(log2)))
+its <- seq(50000,550000,1000)
+
+chain1 <- filter(log1, iteration %in% its) %>% as.mcmc()
+chain2 <- filter(log2, iteration %in% its) %>% as.mcmc()
+
+gelman.diag(mcmc.list(chain1, chain2))
 
 #' All values are very close to 1, so we are good to go.
 #' 
@@ -91,7 +97,7 @@ max = kd_beta(0)
 
 (BF <- d_prior/max)
 
-
+/*
 #' ## Character history
 #' Let's move on to reconstruction of the history of evolution of host repertoire across the Colias phylogeny.
 #' 
@@ -295,4 +301,4 @@ at_nodes <- posterior_at_nodes(history, tree, host_tree)
 p_asr <- plot_module_matrix2(matrix, at_nodes, tree, host_tree, modules = mod_ext, threshold = 0.9)
 p_asr
 
-
+*/
