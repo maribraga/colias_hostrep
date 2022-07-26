@@ -5,6 +5,9 @@
 #'output: github_document
 #'---
 
+#+ setup, include = FALSE
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
 #'-------------
 #'
 #' Script for analyses performed in ... 
@@ -21,8 +24,7 @@ devtools::install_github("maribraga/evolnets")
 
 #' We also need other packages
 
-#+ message = FALSE
-
+#+ packages
 library(evolnets)
 library(MCMCpack)
 library(coda)
@@ -35,6 +37,7 @@ library(patchwork)
 library(bipartite)
 library(tidyverse)
 
+  
 #' ## Parameter estimates
 #' The first thing we need to do is to check that independent MCMC chains have converged to the same posterior distribution. Both chains have achieved an effective sample size ESS > 200 for every parameter.
 #'
@@ -97,33 +100,37 @@ max = kd_beta(0)
 
 (BF <- d_prior/max)
 
-/*
+
 #' ## Character history
 #' Let's move on to reconstruction of the history of evolution of host repertoire across the Colias phylogeny.
 #' 
-#' ### Data
+#' #### Data
 #'
 
 #' **Trees**
 #' 
 #' We use `read_tree_from_revbayes` to read the Colias tree because this file was exported from RevBayes and contains the node labels given by RevBayes. This will be very important in the analysis!
-tree <- read_tree_from_revbayes("./R/data/tree_Rev.tre")
-host_tree <- read.tree("./R/data/host_tree.tre")
+path_data <- "ignore/2s_new_tree/data/"
+path_evol <- "ignore/2s_new_tree/evolnets/"
+
+tree <- read_tree_from_revbayes(paste0(path_evol,"tree_final_Rev.tre"))
+host_tree <- read.tree(paste0(path_data,"host_tree.tre"))
 
 #' **Extant network**
 #' 
 #' This matrix contains 0s and 2s because in the host repertoire model in RevBayes, there are 3 possible states (0,1,2), where 1 means "potential host" and 2 means "actual host". We used the 2-state model for the reconstruction in RevBayes, so we are only interested in the 0s and 2s, no potential host.
 #' 
-matrix <- read.csv("./R/data/matrix.csv", row.names = 1) %>% as.matrix()
-
+matrix <- read.csv(paste0(path_data,"matrix_phylo_timetree.csv"), row.names = 1) %>% as.matrix()
 
 #' **Read in .history.txt files**
 #' 
 #' We'll use the *evolnets* function `read_history()` to read a file outputed from RevBayes with sampled histories during MCMC
 #'  
-history <- read_history("./R/data/out.4.2s.beta.colias.history.txt", burnin = 0.2)
+history <- read_history(paste0(path_out, "out.2.2b.colias.history.txt"), burnin = 0) %>% 
+  filter(iteration %in% its)
 
-#' ### Number of events and effective rate of evolution
+
+#' #### Number of events and effective rate of evolution
 #' 
 
 # Estimated number of events across the Colias phylogeny
@@ -137,6 +144,31 @@ count_gl(history)
 effective_rate(history, tree)
 
 
+#' #### Modules of the extant (present-day) network
+#' 
+
+#+ modules, eval = FALSE
+# find modules
+mod <- mycomputeModules(matrix)
+
+#+ modules_rds, include = FALSE
+mod <- readRDS(paste0(path_evol, "5mods.rds"))
+
+#+ mod_ext_matrix, fig.width = 7, fig.height = 9
+mod_list <- listModuleInformation(mod)[[2]]
+host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
+host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
+mod_order <- host_mods$host
+
+para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
+para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
+mod_order_para <- para_mods$parasite
+
+plot_extant_matrix(matrix, mod, 
+                   parasite_order = mod_order_para, 
+                   host_order = mod_order)
+
+/*
 #' ### Extant and ancestral networks
 #' 
 #' **Time points of interest (ages)**
@@ -146,20 +178,25 @@ effective_rate(history, tree)
 
 #+ tree, fig.width = 6, fig.height = 8, out.width = '80%', dpi = 300
 # visually determine interesting time points to reconstruct ancestral networks
-plot(tree, show.node.label = T, cex = 0.5)
-axisPhylo()
+pt <- ggtree(tree) + 
+  geom_tiplab() + 
+  geom_nodelab(size = 3, color = "grey40") + 
+  theme_tree2()
+
+pt_rev <- revts(pt) + xlim(c(-3, 0.8))
+
+pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0))
 
 # choose time points
-ages <- c(0,0.4,0.8,1.2)
+ages <- c(0,0.7,1.4,2.1)
 
-#' I've chosen 1.2, 0.8, and 0.4, which means 1.2 Ma, 800 and 400 thousand years ago. 
+#' I've chosen 2.1, 1.4, and 0.7, which means 2.1 Ma, 1.4 Ma and 700 thousand years ago. 
 #' 
 #' **Interaction probability at given ages**
 #' 
 #' Now we calculate the posterior probability of interaction between each host and each extant butterfly at each age in `ages`.
 #' 
 at_ages <- posterior_at_ages(history, ages, tree, host_tree)
-pp_at_ages <- at_ages$post_states
 
 #' **Summarize probabilities into ancestral networks**
 #' 
@@ -167,17 +204,11 @@ pp_at_ages <- at_ages$post_states
 #' We chose to reconstruct weighted networks with a threshold of 
 #' 
 
-#+ echo = FALSE
-# ##### temporary fix ######
-pp_at_ages <- lapply(pp_at_ages, abind::adrop, drop = 3)
-# ###
-
-#+ 
-summary_networks <- get_summary_network(pp_at_ages, pt = 0.8)
+summary_networks <- get_summary_networks(at_ages, threshold = 0.9)
 
 #+ eval = FALSE
 # find modules in extant and ancestral networks
-modules_at_ages <- modules_across_ages(summary_networks, tree)
+modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
 #  save R object to be able to use same module configuration in the future
 saveRDS(modules_at_ages, "R/R_objects/modules_at_ages_pp80.rds")
 

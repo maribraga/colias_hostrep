@@ -37,7 +37,7 @@ library(tidyverse)
 
 The first thing we need to do is to check that independent MCMC chains
 have converged to the same posterior distribution. Both chains have
-achieved an effective sample size ESS \> 300 for every parameter.
+achieved an effective sample size ESS \> 200 for every parameter.
 
 **log files**
 
@@ -97,8 +97,6 @@ ggplot(parameters, aes(parameter, value)) +
   theme_bw()
 ```
 
-    ## Warning: Computation failed in `stat_summary()`:
-
 <img src="Host_rep_evolution_files/figure-gfm/densities-1.png" width="70%" />
 
 ``` r
@@ -139,3 +137,97 @@ max = kd_beta(0)
 ```
 
     ## [1] 0.1247874
+
+## Character history
+
+Let’s move on to reconstruction of the history of evolution of host
+repertoire across the Colias phylogeny.
+
+#### Data
+
+**Trees**
+
+We use `read_tree_from_revbayes` to read the Colias tree because this
+file was exported from RevBayes and contains the node labels given by
+RevBayes. This will be very important in the analysis!
+
+``` r
+path_data <- "ignore/2s_new_tree/data/"
+path_evol <- "ignore/2s_new_tree/evolnets/"
+
+tree <- read_tree_from_revbayes(paste0(path_evol,"tree_final_Rev.tre"))
+host_tree <- read.tree(paste0(path_data,"host_tree.tre"))
+```
+
+**Extant network**
+
+This matrix contains 0s and 2s because in the host repertoire model in
+RevBayes, there are 3 possible states (0,1,2), where 1 means “potential
+host” and 2 means “actual host”. We used the 2-state model for the
+reconstruction in RevBayes, so we are only interested in the 0s and 2s,
+no potential host.
+
+``` r
+matrix <- read.csv(paste0(path_data,"matrix_phylo_timetree.csv"), row.names = 1) %>% as.matrix()
+```
+
+**Read in .history.txt files**
+
+We’ll use the *evolnets* function `read_history()` to read a file
+outputed from RevBayes with sampled histories during MCMC
+
+``` r
+history <- read_history(paste0(path_out, "out.2.2b.colias.history.txt"), burnin = 0) %>% 
+  filter(iteration %in% its)
+```
+
+#### Number of events and effective rate of evolution
+
+``` r
+# Estimated number of events across the Colias phylogeny
+count_events(history)
+```
+
+    ##       mean HPD95.lower HPD95.upper
+    ## 1 400.4711         335         462
+
+``` r
+# How many events were host gains and how many host losses?
+count_gl(history)
+```
+
+    ##    gains   losses 
+    ## 169.7405 230.7305
+
+``` r
+# Considering the number of events and the total length of the Colias phylogeny, 
+# what is the estimated rate of host repertoire evolution?
+effective_rate(history, tree)
+```
+
+    ##       mean HPD95.lower HPD95.upper
+    ## 1 5.759065    4.817543    6.643895
+
+#### Modules of the extant (present-day) network
+
+``` r
+# find modules
+mod <- mycomputeModules(matrix)
+```
+
+``` r
+mod_list <- listModuleInformation(mod)[[2]]
+host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
+host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
+mod_order <- host_mods$host
+
+para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
+para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
+mod_order_para <- para_mods$parasite
+
+plot_extant_matrix(matrix, mod, 
+                   parasite_order = mod_order_para, 
+                   host_order = mod_order)
+```
+
+![](Host_rep_evolution_files/figure-gfm/mod_ext_matrix-1.png)<!-- -->
