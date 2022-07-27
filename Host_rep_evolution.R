@@ -58,7 +58,7 @@ colnames(log1) <- colnames(log2) <- c("iteration","clock","beta", "gain", "loss"
 
 #' **Convergence test**
 #' 
-its <- seq(50000,550000,1000)
+its <- seq(50000,500000,1000)
 
 chain1 <- filter(log1, iteration %in% its) %>% as.mcmc()
 chain2 <- filter(log2, iteration %in% its) %>% as.mcmc()
@@ -72,7 +72,7 @@ gelman.diag(mcmc.list(chain1, chain2))
 #' 
 #' Now, we can plot the posterior distributions. Since both chains have samples from the same posterior distribution, we can use only one of the log files for that.
 #' 
-#+ densities, out.width = '70%', dpi = 300
+#+ densities, out.width = '50%', dpi = 300
 parameters <- log1 %>% 
   pivot_longer(cols = 2:5, names_to = "parameter", values_to = "value")
 
@@ -137,7 +137,9 @@ history <- read_history(paste0(path_out, "out.2.2b.colias.history.txt"), burnin 
 count_events(history)
 
 # How many events were host gains and how many host losses?
-count_gl(history)
+gl <- count_gl(history)
+# percentage of gains and losses
+gl/sum(gl)
 
 # Considering the number of events and the total length of the Colias phylogeny, 
 # what is the estimated rate of host repertoire evolution?
@@ -154,21 +156,7 @@ mod <- mycomputeModules(matrix)
 #+ modules_rds, include = FALSE
 mod <- readRDS(paste0(path_evol, "5mods.rds"))
 
-#+ mod_ext_matrix, fig.width = 7, fig.height = 9
-mod_list <- listModuleInformation(mod)[[2]]
-host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
-host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
-mod_order <- host_mods$host
 
-para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
-para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
-mod_order_para <- para_mods$parasite
-
-plot_extant_matrix(matrix, mod, 
-                   parasite_order = mod_order_para, 
-                   host_order = mod_order)
-
-/*
 #' ### Extant and ancestral networks
 #' 
 #' **Time points of interest (ages)**
@@ -176,7 +164,7 @@ plot_extant_matrix(matrix, mod,
 #' The first step to reconstruct ancestral networks is to define the time points during Colias diversification that we want to look at.
 #' 
 
-#+ tree, fig.width = 6, fig.height = 8, out.width = '80%', dpi = 300
+#+ tree, fig.width = 6, fig.height = 8, out.width = '60%', dpi = 300
 # visually determine interesting time points to reconstruct ancestral networks
 pt <- ggtree(tree) + 
   geom_tiplab() + 
@@ -185,7 +173,7 @@ pt <- ggtree(tree) +
 
 pt_rev <- revts(pt) + xlim(c(-3, 0.8))
 
-pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0))
+pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0), col = "blue")
 
 # choose time points
 ages <- c(0,0.7,1.4,2.1)
@@ -206,45 +194,46 @@ at_ages <- posterior_at_ages(history, ages, tree, host_tree)
 
 summary_networks <- get_summary_networks(at_ages, threshold = 0.9)
 
-#+ eval = FALSE
 # find modules in extant and ancestral networks
 modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
-#  save R object to be able to use same module configuration in the future
-saveRDS(modules_at_ages, "R/R_objects/modules_at_ages_pp80.rds")
 
-#+ 
-# using a saved object instead
-modules_at_ages <- readRDS("R/R_objects/modules_at_ages_pp80.rds")
+# save names of matched modules for extant network for other plots
+match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+  filter(age == 0) %>% 
+  select(name, module, type)
 
+# modules and submodules
+mods_pal <- sort(unique(modules_at_ages$matched_modules$original_and_matched_module_names$module_name))
+pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52", 
+          "#9d5568", "#66a182", "#00798c", "#2e4057")
+pal_extant <- c("#edae49", "#d1495b", "#66a182", "#00798c", "#2e4057")
+
+
+#+ mod_ext_matrix, fig.width = 7, fig.height = 9, dpi = 300, out.width = '70%'
+mod_order <- match_mod_ext %>% filter(type == "host") %>% arrange(module) %>% pull(name)
+
+mod_order_para <- match_mod_ext %>% filter(type == "symbiont") %>% arrange(module) %>% pull(name)
+
+p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
+                   parasite_order = mod_order_para, 
+                   host_order = mod_order)
+p_ext_mods + scale_fill_manual(values = pal_extant)
 
 #' **Plot networks**
 #' 
 
-#+ ancestral_nets, fig.width = 15, fig.height = 13, dpi = 300, warning = F
-# get the information needed from `modules_at_ages`
-matched_modules <- modules_at_ages$matched_modules$nodes_and_modules_per_age
+#+ ancestral_nets, fig.width = 12, fig.height = 10, dpi = 300
+p_nets <- plot_ancestral_networks(summary_networks, modules_at_ages, tree, palette = pal, node_size = 2)
+wrap_plots(p_nets, heights = c(2,3), guides = "collect")
 
-pal <- scales::hue_pal()(11)[c(11,2,5,8,9,1,10,3,4,6,7)]
-  
-p_nets <- plot_ancestral_networks(summary_networks, matched_modules, tree, palette = pal)
-wrap_plots(p_nets$plot, nrow = 2)
 
 /*
-#+ extant_graph, fig.width = 8, fig.height = 6.5, dpi = 300, warning = F
-p_nets$plot[[4]]
-
-#+ plotmoduleweb, fig.width = 7, fig.height = 7, dpi = 300, warning = F
-mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
-plotModuleWeb(mod_ext, labsize = 0.4)
-*/
-
-
 #' **Plot networks as matrices**
 #' 
 #' An alternative way to visualize the networks is by plotting them as matrices.
 #' 
 
-#+ ancestral_matrices, fig.width = 12, fig.height = 14, dpi = 300, warning = F
+#+ ancestral_matrices, fig.width = 12, fig.height = 14, dpi = 300
 # get the modules for the extant network
 mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
 
@@ -327,7 +316,7 @@ mod_val$mean_support
 #' **Interaction probability at internal nodes**
 #' 
 
-#+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300, warning = F
+#+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300
 at_nodes <- posterior_at_nodes(history, tree, host_tree)
 p_asr <- plot_module_matrix2(matrix, at_nodes, tree, host_tree, modules = mod_ext, threshold = 0.9)
 p_asr

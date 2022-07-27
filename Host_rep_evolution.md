@@ -1,7 +1,7 @@
 Colias host repertoire evolution
 ================
 Mariana P Braga
-26 July, 2022
+27 July, 2022
 
 ------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ colnames(log1) <- colnames(log2) <- c("iteration","clock","beta", "gain", "loss"
 **Convergence test**
 
 ``` r
-its <- seq(50000,550000,1000)
+its <- seq(50000,500000,1000)
 
 chain1 <- filter(log1, iteration %in% its) %>% as.mcmc()
 chain2 <- filter(log2, iteration %in% its) %>% as.mcmc()
@@ -70,14 +70,14 @@ gelman.diag(mcmc.list(chain1, chain2))
     ## 
     ##           Point est. Upper C.I.
     ## iteration        NaN        NaN
-    ## clock          1.016       1.08
-    ## beta           0.999       1.00
-    ## gain           1.005       1.01
-    ## loss           1.005       1.01
+    ## clock           1.01       1.03
+    ## beta            1.00       1.00
+    ## gain            1.00       1.02
+    ## loss            1.00       1.02
     ## 
     ## Multivariate psrf
     ## 
-    ## 1.02
+    ## 1.01
 
 All values are very close to 1, so we are good to go.
 
@@ -97,7 +97,7 @@ ggplot(parameters, aes(parameter, value)) +
   theme_bw()
 ```
 
-<img src="Host_rep_evolution_files/figure-gfm/densities-1.png" width="70%" />
+<img src="Host_rep_evolution_files/figure-gfm/densities-1.png" width="50%" />
 
 ``` r
 parameters %>% 
@@ -189,15 +189,17 @@ count_events(history)
 ```
 
     ##       mean HPD95.lower HPD95.upper
-    ## 1 400.4711         335         462
+    ## 1 400.7938         337         462
 
 ``` r
 # How many events were host gains and how many host losses?
-count_gl(history)
+gl <- count_gl(history)
+# percentage of gains and losses
+gl/sum(gl)
 ```
 
-    ##    gains   losses 
-    ## 169.7405 230.7305
+    ##     gains    losses 
+    ## 0.4235553 0.5764447
 
 ``` r
 # Considering the number of events and the total length of the Colias phylogeny, 
@@ -206,7 +208,7 @@ effective_rate(history, tree)
 ```
 
     ##       mean HPD95.lower HPD95.upper
-    ## 1 5.759065    4.817543    6.643895
+    ## 1 5.763706    4.846305    6.643895
 
 #### Modules of the extant (present-day) network
 
@@ -215,19 +217,86 @@ effective_rate(history, tree)
 mod <- mycomputeModules(matrix)
 ```
 
+### Extant and ancestral networks
+
+**Time points of interest (ages)**
+
+The first step to reconstruct ancestral networks is to define the time
+points during Colias diversification that we want to look at.
+
 ``` r
-mod_list <- listModuleInformation(mod)[[2]]
-host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
-host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
-mod_order <- host_mods$host
+# visually determine interesting time points to reconstruct ancestral networks
+pt <- ggtree(tree) + 
+  geom_tiplab() + 
+  geom_nodelab(size = 3, color = "grey40") + 
+  theme_tree2()
 
-para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
-para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
-mod_order_para <- para_mods$parasite
+pt_rev <- revts(pt) + xlim(c(-3, 0.8))
 
-plot_extant_matrix(matrix, mod, 
-                   parasite_order = mod_order_para, 
-                   host_order = mod_order)
+pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0), col = "blue")
 ```
 
-![](Host_rep_evolution_files/figure-gfm/mod_ext_matrix-1.png)<!-- -->
+<img src="Host_rep_evolution_files/figure-gfm/tree-1.png" width="60%" />
+
+``` r
+# choose time points
+ages <- c(0,0.7,1.4,2.1)
+```
+
+I’ve chosen 2.1, 1.4, and 0.7, which means 2.1 Ma, 1.4 Ma and 700
+thousand years ago.
+
+**Interaction probability at given ages**
+
+Now we calculate the posterior probability of interaction between each
+host and each extant butterfly at each age in `ages`.
+
+``` r
+at_ages <- posterior_at_ages(history, ages, tree, host_tree)
+```
+
+**Summarize probabilities into ancestral networks**
+
+Make binary or weighted networks? Discard interactions with posterior
+probability \< threshold. We chose to reconstruct weighted networks with
+a threshold of
+
+``` r
+summary_networks <- get_summary_networks(at_ages, threshold = 0.9)
+
+# find modules in extant and ancestral networks
+modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
+
+# save names of matched modules for extant network for other plots
+match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+  filter(age == 0) %>% 
+  select(name, module, type)
+
+# modules and submodules
+mods_pal <- sort(unique(modules_at_ages$matched_modules$original_and_matched_module_names$module_name))
+pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52", 
+          "#9d5568", "#66a182", "#00798c", "#2e4057")
+pal_extant <- c("#edae49", "#d1495b", "#66a182", "#00798c", "#2e4057")
+```
+
+``` r
+mod_order <- match_mod_ext %>% filter(type == "host") %>% arrange(module) %>% pull(name)
+
+mod_order_para <- match_mod_ext %>% filter(type == "symbiont") %>% arrange(module) %>% pull(name)
+
+p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
+                   parasite_order = mod_order_para, 
+                   host_order = mod_order)
+p_ext_mods + scale_fill_manual(values = pal_extant)
+```
+
+<img src="Host_rep_evolution_files/figure-gfm/mod_ext_matrix-1.png" width="70%" />
+
+**Plot networks**
+
+``` r
+p_nets <- plot_ancestral_networks(summary_networks, modules_at_ages, tree, palette = pal, node_size = 2)
+wrap_plots(p_nets, heights = c(2,3), guides = "collect")
+```
+
+![](Host_rep_evolution_files/figure-gfm/ancestral_nets-1.png)<!-- -->
