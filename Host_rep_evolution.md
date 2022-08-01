@@ -1,7 +1,7 @@
 Colias host repertoire evolution
 ================
 Mariana P Braga
-27 July, 2022
+01 August, 2022
 
 ------------------------------------------------------------------------
 
@@ -267,11 +267,6 @@ summary_networks <- get_summary_networks(at_ages, threshold = 0.9)
 # find modules in extant and ancestral networks
 modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
 
-# save names of matched modules for extant network for other plots
-match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
-  filter(age == 0) %>% 
-  select(name, module, type)
-
 # modules and submodules
 mods_pal <- sort(unique(modules_at_ages$matched_modules$original_and_matched_module_names$module_name))
 pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52", 
@@ -279,20 +274,7 @@ pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52",
 pal_extant <- c("#edae49", "#d1495b", "#66a182", "#00798c", "#2e4057")
 ```
 
-``` r
-mod_order <- match_mod_ext %>% filter(type == "host") %>% arrange(module) %>% pull(name)
-
-mod_order_para <- match_mod_ext %>% filter(type == "symbiont") %>% arrange(module) %>% pull(name)
-
-p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
-                   parasite_order = mod_order_para, 
-                   host_order = mod_order)
-p_ext_mods + scale_fill_manual(values = pal_extant)
-```
-
-<img src="Host_rep_evolution_files/figure-gfm/mod_ext_matrix-1.png" width="70%" />
-
-**Plot networks**
+**Plot ancestral networks**
 
 ``` r
 p_nets <- plot_ancestral_networks(summary_networks, modules_at_ages, tree, palette = pal, node_size = 2)
@@ -300,3 +282,196 @@ wrap_plots(p_nets, heights = c(2,3), guides = "collect")
 ```
 
 ![](Host_rep_evolution_files/figure-gfm/ancestral_nets-1.png)<!-- -->
+
+**Plot ancestral networks as matrices**
+
+An alternative way to visualize the networks is by plotting them as
+matrices.
+
+``` r
+# create plots with a matrix for each age
+p_mod_matrix_ages <- list()
+
+for(i in seq_along(ages)){
+  
+  a <- ages[i]
+  
+  net <- summary_networks[[as.character(a)]] %>% as.matrix()
+  
+  mod_df <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+    filter(age == a) %>% 
+    select(name, module, type)
+  
+  if(a != 0){
+    
+    plot <- plot_extant_matrix(net, mod_df) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
+    
+  } else{
+    
+    # names of matched modules for extant network
+    match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+      filter(age == 0) %>% 
+      select(name, module, type)
+    mod_order <- match_mod_ext %>% 
+      filter(type == "host") %>% 
+      arrange(module) %>% 
+      pull(name)
+    mod_order_para <- match_mod_ext %>% 
+      filter(type == "symbiont") %>% 
+      arrange(module) %>% 
+      pull(name)
+    
+    p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
+                                     parasite_order = mod_order_para, 
+                                     host_order = mod_order)
+    p_ext_mods + scale_fill_manual(values = pal_extant)
+    
+    plot <- plot_extant_matrix(net, mod_df, 
+                               parasite_order = mod_order_para, 
+                               host_order = mod_order) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
+  }
+  
+  p_mod_matrix_ages[[i]] <- plot
+  
+}
+
+# define the layout of the plot
+layout <- c(
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2),
+  area(10,1,10,2)
+)
+
+# plot!
+wrap_plots(p_mod_matrix_ages, design = layout, guides = "keep")
+```
+
+![](Host_rep_evolution_files/figure-gfm/anc_nets_matrix-1.png)<!-- -->
+
+**Module validation**
+
+We use modules to facilitate visualisation but sometimes they also have
+biological meaning. This step tells us whether the modules in the
+ancestral networks are robust across MCMC samples or an artifact of the
+summary networks.
+
+``` r
+samples_at_ages <- get_sampled_networks(at_ages)
+```
+
+``` r
+mod_samples <- modules_from_samples(samples_at_ages)
+saveRDS(mod_samples, "ignore/2s_new_tree/evolnets/mod_samples.rds")
+# took 56 min!
+```
+
+``` r
+mod_val <- support_for_modules(mod_samples, modules_at_ages, palette = pal)
+mod_val$mean_support
+```
+
+    ## $`2.1`
+    ##   module      mean  geo_mean
+    ## 1   M2.1 0.7145233 0.6564542
+    ## 2   M2.2 0.7474058 0.7335889
+    ## 3   M2.3 0.6990022 0.6394682
+    ## 
+    ## $`1.4`
+    ##   module      mean  geo_mean
+    ## 1     M2 0.3198653 0.2372783
+    ## 2     M4 0.3999377 0.3250124
+    ## 3     M5 0.6015965 0.5544763
+    ## 
+    ## $`0.7`
+    ##   module      mean  geo_mean
+    ## 1     M2 0.2969871 0.2194996
+    ## 2     M3 0.7993348 0.7737374
+    ## 3     M4 0.3029071 0.2418875
+    ## 4     M5 0.6210688 0.5767145
+
+``` r
+layout_val <- c(
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2)
+  )
+wrap_plots(rev(mod_val$plot), design = layout_val, guides = "collect")
+```
+
+![](Host_rep_evolution_files/figure-gfm/support-1.png)<!-- -->
+
+### Ancestral states at internal nodes of Colias phylogeny
+
+We also wanted to do a tradition ancestral state reconstruction (ASR),
+calculating interaction probabilities at internal nodes of the Colias
+tree. And now that we have defined modules for the extant network, we
+can also use them to group hosts in the ASR.
+
+**Interaction probability at internal nodes**
+
+``` r
+at_nodes <- posterior_at_nodes(history, tree, host_tree)
+
+p_asr <- plot_matrix_phylo(matrix, at_nodes, tree, host_tree, modules = match_mod_ext, threshold = 0.9, colors = pal_extant)
+p_asr
+```
+
+![](Host_rep_evolution_files/figure-gfm/ancestral_states-1.png)<!-- -->
+
+**Plot ancestral states as matrix**
+
+``` r
+pp <- at_nodes$post_states[,,1]
+
+graph <- igraph::graph_from_incidence_matrix(pp, weighted = TRUE)
+
+nodes <- paste0("Index_",(Ntip(tree)+1):(Ntip(tree)+Nnode(tree)))
+
+edge_list_nodes_mod <- igraph::get.data.frame(graph, what = "edges") %>% 
+  dplyr::mutate(from = factor(from, levels = nodes),
+                to = factor(to, levels = host_tree$tip.label),
+                name = to) %>% 
+  left_join(filter(match_mod_ext, type == "host")) %>% 
+  rename(p = weight)
+
+gg_all_nodes_mod <- ggplot(edge_list_nodes_mod, aes(x = to, y = from)) +
+  geom_tile(aes(fill = module, alpha = p)) +
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  scale_fill_discrete(type = pal_extant) +
+  scale_alpha(guide = guide_legend(title = "Posterior\nprobability")) +
+  labs(fill = "Module") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 270, hjust = 0, size = 7),
+    axis.text.y = element_text(size = 7),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank())
+
+gg_high_nodes_mods <- filter(edge_list_nodes_mod, p >= 0.9) %>%
+  mutate(group = case_when(p < 0.95 ~ ".90-.94",
+                           p >= 0.95 ~ ".95-1",
+                           TRUE ~ as.character(p))) %>%
+  ggplot(aes(x = to, y = from)) + 
+  geom_tile(aes(fill = module, alpha = group)) +
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  scale_fill_discrete(type = pal_extant[c(2,4,5)]) +
+  scale_alpha_discrete(range = c(0.6,1), guide = guide_legend(title = "Posterior\nprobability")) +
+  labs(fill = "Module") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 270, hjust = 0, size = 7),
+    axis.text.y = element_text(size = 7),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank())
+
+gg_all_nodes_mod + gg_high_nodes_mods
+```
+
+![](Host_rep_evolution_files/figure-gfm/nodes_matrix-1.png)<!-- -->

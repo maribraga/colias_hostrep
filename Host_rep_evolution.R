@@ -197,11 +197,6 @@ summary_networks <- get_summary_networks(at_ages, threshold = 0.9)
 # find modules in extant and ancestral networks
 modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
 
-# save names of matched modules for extant network for other plots
-match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
-  filter(age == 0) %>% 
-  select(name, module, type)
-
 # modules and submodules
 mods_pal <- sort(unique(modules_at_ages$matched_modules$original_and_matched_module_names$module_name))
 pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52", 
@@ -209,17 +204,7 @@ pal <- c("#edae49", "#d1495b", "#d86357", "#df7c52",
 pal_extant <- c("#edae49", "#d1495b", "#66a182", "#00798c", "#2e4057")
 
 
-#+ mod_ext_matrix, fig.width = 7, fig.height = 9, dpi = 300, out.width = '70%'
-mod_order <- match_mod_ext %>% filter(type == "host") %>% arrange(module) %>% pull(name)
-
-mod_order_para <- match_mod_ext %>% filter(type == "symbiont") %>% arrange(module) %>% pull(name)
-
-p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
-                   parasite_order = mod_order_para, 
-                   host_order = mod_order)
-p_ext_mods + scale_fill_manual(values = pal_extant)
-
-#' **Plot networks**
+#' **Plot ancestral networks**
 #' 
 
 #+ ancestral_nets, fig.width = 12, fig.height = 10, dpi = 300
@@ -227,16 +212,13 @@ p_nets <- plot_ancestral_networks(summary_networks, modules_at_ages, tree, palet
 wrap_plots(p_nets, heights = c(2,3), guides = "collect")
 
 
-/*
-#' **Plot networks as matrices**
+
+#' **Plot ancestral networks as matrices**
 #' 
 #' An alternative way to visualize the networks is by plotting them as matrices.
 #' 
 
-#+ ancestral_matrices, fig.width = 12, fig.height = 14, dpi = 300
-# get the modules for the extant network
-mod_ext <- modules_at_ages$original_modules$moduleWeb_objects$`0`
-
+#+ anc_nets_matrix, fig.width = 7, fig.height = 22, dpi = 300
 # create plots with a matrix for each age
 p_mod_matrix_ages <- list()
 
@@ -244,29 +226,43 @@ for(i in seq_along(ages)){
   
   a <- ages[i]
   
+  net <- summary_networks[[as.character(a)]] %>% as.matrix()
+  
+  mod_df <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+    filter(age == a) %>% 
+    select(name, module, type)
+  
   if(a != 0){
-    net <- summary_networks[[as.character(a)]] %>% as.matrix()
     
-    mod_df <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
-      filter(age == a) %>% 
-      select(name, module, type) 
-    
-    plot <- plot_module_matrix(net, mod_df)
+    plot <- plot_extant_matrix(net, mod_df) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
     
   } else{
     
-    mod_list <- listModuleInformation(mod_ext)[[2]]
-    host_mods <- lapply(mod_list, function(x) data.frame(host = x[[2]]))
-    host_mods <- dplyr::bind_rows(host_mods, .id = 'host_module')
-    mod_order <- host_mods$host
+    # names of matched modules for extant network
+    match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+      filter(age == 0) %>% 
+      select(name, module, type)
+    mod_order <- match_mod_ext %>% 
+      filter(type == "host") %>% 
+      arrange(module) %>% 
+      pull(name)
+    mod_order_para <- match_mod_ext %>% 
+      filter(type == "symbiont") %>% 
+      arrange(module) %>% 
+      pull(name)
     
-    para_mods <- lapply(mod_list, function(x) data.frame(parasite = x[[1]]))
-    para_mods <- dplyr::bind_rows(para_mods, .id = 'parasite_module')
-    mod_order_para <- para_mods$parasite
+    p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
+                                     parasite_order = mod_order_para, 
+                                     host_order = mod_order)
+    p_ext_mods + scale_fill_manual(values = pal_extant)
     
-    plot <- plot_module_matrix(matrix, mod_ext, 
-                       parasite_order = mod_order_para, 
-                       host_order = mod_order)
+    plot <- plot_extant_matrix(net, mod_df, 
+                               parasite_order = mod_order_para, 
+                               host_order = mod_order) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
   }
   
   p_mod_matrix_ages[[i]] <- plot
@@ -275,39 +271,43 @@ for(i in seq_along(ages)){
 
 # define the layout of the plot
 layout <- c(
-  area(3,3,7,5),
-  area(3,1,7,2),
-  area(1,4,2,5),
-  area(1,2)
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2),
+  area(10,1,10,2)
 )
-/*
-  plot(layout)
-*/
 
 # plot!
-wrap_plots(p_mod_matrix_ages, ncol = 2, design = layout, guides = "keep")
+wrap_plots(p_mod_matrix_ages, design = layout, guides = "keep")
 
 
-
-
-/*  # hide this for now. not necessary and $plot is wrong
 #' **Module validation**
 #' 
 #' We use modules to facilitate visualisation but sometimes they also have biological meaning. This step tells us whether the modules in the ancestral networks are robust across MCMC samples or an artifact of the summary networks.
 #' 
 
-samples_at_ages <- c(
-  lapply(at_ages$samples[1:3], function(x) x[1:3,,]),
-  at_ages$samples[4]
-)
-mod_samples <- modules_from_samples(samples_at_ages)
+#+ mod_validation
+samples_at_ages <- get_sampled_networks(at_ages)
 
-mod_val <- support_for_modules(mod_samples, modules_at_ages)
-mod_val$plot
-mod_val$pairwise_membership
+#+ mod_val, eval = FALSE
+mod_samples <- modules_from_samples(samples_at_ages)
+saveRDS(mod_samples, "ignore/2s_new_tree/evolnets/mod_samples.rds")
+# took 56 min!
+
+#+ mod_val_read, echo = FALSE
+mod_samples <- readRDS("ignore/2s_new_tree/evolnets/mod_samples.rds")
+
+#+ support, fig.width = 7, fig.height = 14, dpi = 300
+mod_val <- support_for_modules(mod_samples, modules_at_ages, palette = pal)
 mod_val$mean_support
 
-*/
+layout_val <- c(
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2)
+  )
+wrap_plots(rev(mod_val$plot), design = layout_val, guides = "collect")
+
 
   
 #' ### Ancestral states at internal nodes of Colias phylogeny
@@ -316,9 +316,59 @@ mod_val$mean_support
 #' **Interaction probability at internal nodes**
 #' 
 
-#+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300
+#+ ancestral_states, fig.width = 13, fig.height = 11, dpi = 300
 at_nodes <- posterior_at_nodes(history, tree, host_tree)
-p_asr <- plot_module_matrix2(matrix, at_nodes, tree, host_tree, modules = mod_ext, threshold = 0.9)
+
+p_asr <- plot_matrix_phylo(matrix, at_nodes, tree, host_tree, modules = match_mod_ext, threshold = 0.9, colors = pal_extant)
 p_asr
 
-*/
+#' **Plot ancestral states as matrix**
+#' 
+
+#+ nodes_matrix, fig.width = 12, fig.height = 6, dpi = 300
+pp <- at_nodes$post_states[,,1]
+
+graph <- igraph::graph_from_incidence_matrix(pp, weighted = TRUE)
+
+nodes <- paste0("Index_",(Ntip(tree)+1):(Ntip(tree)+Nnode(tree)))
+
+edge_list_nodes_mod <- igraph::get.data.frame(graph, what = "edges") %>% 
+  dplyr::mutate(from = factor(from, levels = nodes),
+                to = factor(to, levels = host_tree$tip.label),
+                name = to) %>% 
+  left_join(filter(match_mod_ext, type == "host")) %>% 
+  rename(p = weight)
+
+gg_all_nodes_mod <- ggplot(edge_list_nodes_mod, aes(x = to, y = from)) +
+  geom_tile(aes(fill = module, alpha = p)) +
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  scale_fill_discrete(type = pal_extant) +
+  scale_alpha(guide = guide_legend(title = "Posterior\nprobability")) +
+  labs(fill = "Module") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 270, hjust = 0, size = 7),
+    axis.text.y = element_text(size = 7),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank())
+
+gg_high_nodes_mods <- filter(edge_list_nodes_mod, p >= 0.9) %>%
+  mutate(group = case_when(p < 0.95 ~ ".90-.94",
+                           p >= 0.95 ~ ".95-1",
+                           TRUE ~ as.character(p))) %>%
+  ggplot(aes(x = to, y = from)) + 
+  geom_tile(aes(fill = module, alpha = group)) +
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  scale_fill_discrete(type = pal_extant[c(2,4,5)]) +
+  scale_alpha_discrete(range = c(0.6,1), guide = guide_legend(title = "Posterior\nprobability")) +
+  labs(fill = "Module") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 270, hjust = 0, size = 7),
+    axis.text.y = element_text(size = 7),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank())
+
+gg_all_nodes_mod + gg_high_nodes_mods
