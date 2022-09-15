@@ -6,7 +6,7 @@
 #'---
 
 #+ setup, include = FALSE
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 #'-------------
 #'
@@ -78,10 +78,12 @@ effectiveSize(chain1)
 parameters <- chain1 %>% 
   pivot_longer(cols = 2:5, names_to = "parameter", values_to = "value")
 
-ggplot(parameters, aes(parameter, value)) +
-  geom_violin() +
-  stat_summary(fun.data = "median_hilow", color = "red", size = 0.5) +
+plot_param <- ggplot(parameters, aes(parameter, value)) +
+  geom_violin(col = "grey40") +
+  stat_summary(fun.data = "median_hilow", color = "#E76F51", size = 0.5) +
   theme_bw()
+
+plot_param
 
 parameters %>% 
   group_by(parameter) %>% 
@@ -94,7 +96,7 @@ parameters %>%
 #'  
 d_prior <- dexp(x=0, rate=1)
 
-kd_beta <- kdensity(x = log1$beta, 
+kd_beta <- kdensity(x = chain1$beta, 
                     kernel='gamma', 
                     support=c(0,Inf), 
                     bw = 0.02)
@@ -175,7 +177,7 @@ pt <- ggtree(tree) +
 
 pt_rev <- revts(pt) + xlim(c(-3, 0.8))
 
-pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0), col = "blue")
+pt_rev_ages <- pt_rev + geom_vline(xintercept = c(-2.1,-1.4,-0.7,0), col = "blue")
 
 # choose time points
 ages <- c(0,0.7,1.4,2.1)
@@ -327,6 +329,47 @@ mod_val$mean_support
 #+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300
 at_nodes <- posterior_at_nodes(history, tree, host_tree)
 p_asr <- plot_matrix_phylo(matrix, at_nodes, tree, host_tree, modules = mod, threshold = 0.9, colors = pal_extant)
+p_asr[[2]] <- p_asr[[2]] + theme(axis.text = element_text(face = "italic"))
 p_asr
+
+#+ mrcas, echo = TRUE
+# root state
+root_state <- sort(at_nodes$post_states["Index_99",,], decreasing = T)
+root_state <- root_state[which(root_state > 0.8)]
+root_state
+
+# Clade A
+cladeA_state <- at_nodes$post_states[paste0("Index_", 51:56),,]
+cladeA_state <- cladeA_state[,colSums(cladeA_state) > 0.8]
+cladeA_state
+
+mrcaA_state <- sort(at_nodes$post_states["Index_56",,], decreasing = T)
+mrcaA_state <- mrcaA_state[which(mrcaA_state > 0.8)]
+mrcaA_state
+
+# Clade B MRCA
+mrcaB_state <- sort(at_nodes$post_states["Index_98",,], decreasing = T)
+mrcaB_state <- mrcaB_state[which(mrcaB_state > 0.8)]
+mrcaB_state
+
+
+/*
+###
+  
+# Figures for paper
+
+p_asr
+
+p_mod_matrix_ages[[1]] +theme(axis.text = element_text(face = "italic"),
+                              legend.position = "bottom",
+                              title = element_blank())
+  
+plot(tree, show.node.label = TRUE, cex = 0.8)
+
+plot_param
+
+###  
+*/
+
 
 
