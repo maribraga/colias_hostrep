@@ -353,7 +353,24 @@ mrcaB_state <- mrcaB_state[which(mrcaB_state > 0.8)]
 mrcaB_state
 
 
+#' ### Network structure
+#' 
+
+net <- replace(matrix, which(matrix[,] == 2), 1)
+index_at_ages_summary(list("0" = net), index = "Q")
+index_at_ages_summary(list("0" = net), index = "NODF")
+visweb(net, type = "nested")
+
+
 /*
+
+#    N_obs      mean         sd         z age
+# 35.90436  10.23888  0.6518014  39.37623   0
+#  
+#     Q_obs      mean        sd         z age
+# 0.3998386 0.4311886 0.0113634 -2.758858   0
+
+  
 ###
   
 # Figures for paper
@@ -370,6 +387,9 @@ plot_param
 
 ###  
 */
+
+
+
 
 
 
