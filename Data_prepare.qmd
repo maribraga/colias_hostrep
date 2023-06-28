@@ -1,0 +1,113 @@
+---
+title: "Data for all analyses"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: packages
+#| message: false
+
+library(ape)
+library(evolnets)
+library(tidyverse)
+```
+
+### Processed data
+
+```{r}
+tree_full <- read.tree("./data/full_tree_clean.tre")
+geo_data_full <- read.csv("./data/Colias_distribution.csv")
+host_data_full <- read.csv("./data/Colias_hosts.csv")
+
+Ntip(tree_full)
+n_distinct(geo_data_full$species)
+n_distinct(host_data_full$species)
+
+```
+
+### Data for historical biogeography analysis
+
+Get the intersect between the tree and the distribution data
+
+```{r}
+spp_geo <- intersect(tree_full$tip.label, geo_data_full$species)
+
+# one species missing distribution data
+setdiff(tree_full$tip.label, geo_data_full$species)
+
+setdiff(geo_data_full$species, tree_full$tip.label)
+```
+
+Prune tree and distribution data to include only species in both
+
+```{r}
+tree_geo <- drop.tip(tree_full, setdiff(tree_full$tip.label, spp_geo))
+tree_geo
+
+geo_data <- filter(geo_data_full, species %in% spp_geo)
+```
+
+### Data for host repertoire evolution analysis
+
+```{r}
+spp_host <- intersect(tree_full$tip.label, host_data_full$species)
+
+# tips without host use data
+setdiff(tree_full$tip.label, host_data_full$species)
+
+# species with knows hosts but not in the tree
+setdiff(host_data_full$species, tree_full$tip.label)
+```
+
+Prune tree and host data to include only species in both
+
+```{r}
+tree_host <- drop.tip(tree_full, setdiff(tree_full$tip.label, spp_host))
+tree_host
+
+host_data <- filter(host_data_full, species %in% spp_host)
+```
+
+
+#### Make interaction matrix from edge list
+
+```{r}
+
+# the interaction matrix needs to be in the correct format for RevBayes
+# edge list to matrix
+matrix <- host_data %>% 
+  select(-host_family) %>% 
+  mutate(values = 2) %>% 
+  pivot_wider(names_from = host_genus, values_from = values) %>% 
+  column_to_rownames("species") %>% 
+  as.matrix()
+
+# check that all host are in the matrix
+dim(matrix)[2] == n_distinct(host_data$host_genus)
+
+# replace NAs with 0
+matrix[is.na(matrix)] <- 0
+
+# order rows by tree
+matrix_phylo <- as.matrix(matrix)[tree_host$tip.label,]
+
+# host tree
+
+
+```
+
+**Write out data for RevBayes**
+
+```{r}
+#| eval: false
+
+write.tree(tree_host, "./host_repertoire/data/tree_colias.tre")
+
+write.csv(matrix_phylo, "./host_repertoire/data/interaction_matrix.csv")
+write.nexus.data(matrix_phylo, "./host_repertoire/data/interaction_matrix.nex", format = "standard")
+# then, fix header to match RevBayes style
+```
+
+
+

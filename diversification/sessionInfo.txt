@@ -1,0 +1,47 @@
+> sessionInfo()
+R version 4.3.0 (2023-04-21)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Ventura 13.4
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: Europe/Stockholm
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] RPANDA_2.0     picante_1.8.2  nlme_3.1-162   vegan_2.6-4    lattice_0.21-8 permute_0.9-7  ape_5.7-1      devtools_2.4.5
+[9] usethis_2.1.6 
+
+loaded via a namespace (and not attached):
+  [1] RColorBrewer_1.1-3      rstudioapi_0.14         pvclust_2.2-0           subplex_1.8             magrittr_2.0.3         
+  [6] modeltools_0.2-23       fs_1.6.2                fields_14.1             vctrs_0.6.2             memoise_2.0.1          
+ [11] terra_1.7-29            htmltools_0.5.5         plotrix_3.8-2           deSolve_1.35            raster_3.6-20          
+ [16] htmlwidgets_1.6.2       cachem_1.0.8            igraph_1.4.3            mime_0.12               lifecycle_1.0.3        
+ [21] iterators_1.0.14        pkgconfig_2.0.3         Matrix_1.5-4.1          R6_2.5.1                fastmap_1.1.1          
+ [26] shiny_1.7.4             digest_0.6.31           numDeriv_2016.8-1.1     colorspace_2.1-0        ps_1.7.5               
+ [31] pkgload_1.3.2           clusterGeneration_1.3.7 fansi_1.0.4             pspline_1.0-19          mgcv_1.8-42            
+ [36] compiler_4.3.0          remotes_2.4.2           doParallel_1.0.17       optimParallel_1.0-2     viridis_0.6.3          
+ [41] ParallelLogger_3.1.0    pkgbuild_1.4.0          maps_3.4.1              MASS_7.3-60             sessioninfo_1.2.2      
+ [46] corpcor_1.6.10          scatterplot3d_0.3-44    tools_4.3.0             prabclus_2.3-2          httpuv_1.6.11          
+ [51] phytools_1.5-1          nnet_7.3-19             glue_1.6.2              quadprog_1.5-8          callr_3.7.3            
+ [56] promises_1.2.0.1        grid_4.3.0              cluster_2.1.4           generics_0.1.3          snow_0.4-4             
+ [61] gtable_0.3.3            class_7.3-22            sna_2.7-1               sp_1.6-1                utf8_1.2.3             
+ [66] flexmix_2.3-19          foreach_1.5.2           pillar_1.9.0            stringr_1.5.0           spam_2.9-1             
+ [71] later_1.3.1             robustbase_0.95-1       splines_4.3.0           dplyr_1.1.2             gmp_0.7-1              
+ [76] tidyselect_1.2.0        bipartite_2.18          miniUI_0.1.1.1          knitr_1.43              gridExtra_2.3          
+ [81] stats4_4.3.0            xfun_0.39               expm_0.999-7            diptest_0.76-0          DEoptimR_1.0-14        
+ [86] stringi_1.7.12          statnet.common_4.9.0    mvMORPH_1.1.7           codetools_0.2-19        kernlab_0.9-32         
+ [91] tibble_3.2.1            cli_3.6.1               xtable_1.8-4            pbmcapply_1.5.1         munsell_0.5.0          
+ [96] processx_3.8.1          network_1.18.1          Rcpp_1.0.10             glassoFast_1.0          coda_0.19-4            
+[101] parallel_4.3.0          ellipsis_0.3.2          ggplot2_3.4.2           prettyunits_1.1.1       dotCall64_1.0-2        
+[106] mclust_6.0.0            profvis_0.3.8           urlchecker_1.0.1        Rmpfr_0.9-2             phangorn_2.11.1        
+[111] viridisLite_0.4.2       scales_1.2.1            purrr_1.0.1             crayon_1.5.2            combinat_0.0-8         
+[116] fpc_2.2-10              rlang_1.1.1             fastmatch_1.1-3         mnormt_2.1.1            TESS_2.1.2             
