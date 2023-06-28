@@ -99,10 +99,109 @@ legend("topleft", legend = c("Backbone", "After shift"), col = c("black", group_
 
 #### Model adequacy ----
 
+all_posteriors <- simul.comb.shift(phylo = tree, sampling.fractions = sfrac, shift.res = shifts) 
+posterior_trees <- all_posteriors #[1:500]
+
+# Number of tips per group
+
+ntip_by_groups <- lapply(posterior_trees, function(x) table(sapply(strsplit(x$tip.label, split = ""), "[[", 1))) 
+ntip_by_groups_df <- as.data.frame(do.call(rbind, ntip_by_groups)) 
+ntip_by_groups_colias <- c(73,7)
+
+
+par(mfrow = c(1,2), cex = 0.6) 
+boxplot(ntip_by_groups_df, las = 1, main = "Species richness by group", ylab = "Number of species", xlab = "Groups") 
+points(c(1:2), ntip_by_groups_colias, pch = 19, col = "red") 
+legend("toprigh", bty = "n", legend = "Empirical values", pch = 19, col = "red", cex = 1)
+
+median(ntip_by_groups_df$a)
+median(ntip_by_groups_df$z)
+
+library(coda)
+divA <- as.mcmc(ntip_by_groups_df$a)
+divZ <- as.mcmc(ntip_by_groups_df$z)
+
+HPDinterval(divA)
+HPDinterval(divZ)
+
+
+# Tree imbalance
+
+library(treebalance)
+
+avgLeafDepI <- avgLeafDepI(tree) 
+avgLeafDepI_posteriors <- sapply(posterior_trees, avgLeafDepI) 
+hist(avgLeafDepI_posteriors, 
+     main = "Distribution of average leaf depth index",
+     xlab = "Average leaf depth", las = 1) 
+abline(v = avgLeafDepI, col = "red")
+
+
+# LTT 
+
+library(phytools)
+
+ltt_cetacea <- ltt(tree, plot = F) 
+ltt_cetacea_df <- data.frame(times = round(ltt_cetacea$times, 4), ltt = ltt_cetacea$ltt)
+
+posterior_trees_mp <- as.multiPhylo(posterior_trees[[1]]) 
+
+for(i in 2:length(posterior_trees)){ 
+  posterior_trees_mp[[i]] <- posterior_trees[[i]] 
+} 
+
+ltt95_CI <- ltt95(posterior_trees_mp, log = T, las = 1) 
+lines(ltt_cetacea_df$times, ltt_cetacea_df$ltt, type = "s", col = "red") 
+mtext(text = "Cetacea", side = 3, line = 1)
+
+ltt95_CI_df <- as.data.frame(ltt95_CI[,c("time", "low(lineages)", "high(lineages)")])
+
+ltt95_CI_df$time <- round(ltt95_CI_df$time, 4)
+
+points_in_cetacea <- c() 
+for(i in 1:nrow(ltt_cetacea_df)){
+  int_max <- sort(ltt95_CI_df$time[ ltt95_CI_df$time >= ltt_cetacea_df$times[i]][1]) 
+  int_min <- sort(ltt95_CI_df$time[ltt95_CI_df$time <= ltt_cetacea_df$times[i]],
+                  decreasing = T)[1] 
+  ltt_min <- ltt95_CI_df$`low(lineages)`[ltt95_CI_df$time == int_min] 
+  ltt_max <- ltt95_CI_df$`high(lineages)`[ltt95_CI_df$time == int_max]
+  points_in_cetacea[i] <- ifelse(ltt_min <= ltt_cetacea_df$ltt[i] & 
+                                   ltt_cetacea_df$ltt[i] <= ltt_max, T, F)
+} 
+
+legend("topleft", legend = c("95% of the distribution of simulated trees around the median", "Median of simulated trees", "Empirical data"), lty = c(3,1,1), lwd = c(1,2,1), col = c("black","black","red"), bty = "n", cex = 0.8)
+
+sum(points_in_cetacea)/length(points_in_cetacea)
+# 98.5% of the values of the empirical LTT fall in the 95% confidence interval
 
 
 
 
+# _ggplot ----
+# library(tidyverse)
+# 
+# ntips <- bind_rows(ntip_by_groups_df, 
+#                    tibble(a = ntip_by_groups_colias[1], z = ntip_by_groups_colias[2])) %>% 
+#   mutate(data = c(rep("simulated", nrow(ntip_by_groups_df)), "empirical"),
+#          id = 1:(nrow(ntip_by_groups_df)+1)) %>% 
+#   rename(clade = a, backbone = z) %>% 
+#   pivot_longer(1:2, names_to = "clade", values_to = "ntips")
+# 
+# ggplot(ntips) +
+#   geom_violin(aes(clade, ntips, fill = data, col = data), alpha = 0.6) +
+#   geom_point(aes(clade, ntips), data = filter(ntips, data == 'empirical')) +
+#   theme_bw()
+# 
+# ggplot(ntips) +
+#   geom_boxplot(aes(data, ntips), alpha = 0.6, data = filter(ntips, data == 'simulated')) +
+#   geom_hline(aes(yintercept = ntips), col = "red", data = filter(ntips, data == 'empirical')) +
+#   facet_grid(rows = vars(clade), scales = "free") +
+#   theme_bw()
+
+
+
+
+#--
 
 
 #### Test model order ----------------------
