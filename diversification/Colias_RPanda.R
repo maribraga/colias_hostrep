@@ -141,8 +141,8 @@ abline(v = avgLeafDepI, col = "red")
 
 library(phytools)
 
-ltt_cetacea <- ltt(tree, plot = F) 
-ltt_cetacea_df <- data.frame(times = round(ltt_cetacea$times, 4), ltt = ltt_cetacea$ltt)
+ltt_colias <- ltt(tree, plot = F) 
+ltt_colias_df <- data.frame(times = round(ltt_colias$times, 4), ltt = ltt_colias$ltt)
 
 posterior_trees_mp <- as.multiPhylo(posterior_trees[[1]]) 
 
@@ -151,27 +151,27 @@ for(i in 2:length(posterior_trees)){
 } 
 
 ltt95_CI <- ltt95(posterior_trees_mp, log = T, las = 1) 
-lines(ltt_cetacea_df$times, ltt_cetacea_df$ltt, type = "s", col = "red") 
-mtext(text = "Cetacea", side = 3, line = 1)
+lines(ltt_colias_df$times, ltt_colias_df$ltt, type = "s", col = "red") 
+mtext(text = "Colias", side = 3, line = 1)
 
 ltt95_CI_df <- as.data.frame(ltt95_CI[,c("time", "low(lineages)", "high(lineages)")])
 
 ltt95_CI_df$time <- round(ltt95_CI_df$time, 4)
 
-points_in_cetacea <- c() 
-for(i in 1:nrow(ltt_cetacea_df)){
-  int_max <- sort(ltt95_CI_df$time[ ltt95_CI_df$time >= ltt_cetacea_df$times[i]][1]) 
-  int_min <- sort(ltt95_CI_df$time[ltt95_CI_df$time <= ltt_cetacea_df$times[i]],
+points_in_colias <- c() 
+for(i in 1:nrow(ltt_colias_df)){
+  int_max <- sort(ltt95_CI_df$time[ ltt95_CI_df$time >= ltt_colias_df$times[i]][1]) 
+  int_min <- sort(ltt95_CI_df$time[ltt95_CI_df$time <= ltt_colias_df$times[i]],
                   decreasing = T)[1] 
   ltt_min <- ltt95_CI_df$`low(lineages)`[ltt95_CI_df$time == int_min] 
   ltt_max <- ltt95_CI_df$`high(lineages)`[ltt95_CI_df$time == int_max]
-  points_in_cetacea[i] <- ifelse(ltt_min <= ltt_cetacea_df$ltt[i] & 
-                                   ltt_cetacea_df$ltt[i] <= ltt_max, T, F)
+  points_in_colias[i] <- ifelse(ltt_min <= ltt_colias_df$ltt[i] & 
+                                   ltt_colias_df$ltt[i] <= ltt_max, T, F)
 } 
 
 legend("topleft", legend = c("95% of the distribution of simulated trees around the median", "Median of simulated trees", "Empirical data"), lty = c(3,1,1), lwd = c(1,2,1), col = c("black","black","red"), bty = "n", cex = 0.8)
 
-sum(points_in_cetacea)/length(points_in_cetacea)
+sum(points_in_colias)/length(points_in_colias)
 # 98.5% of the values of the empirical LTT fall in the 95% confidence interval
 
 
