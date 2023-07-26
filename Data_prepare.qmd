@@ -26,17 +26,26 @@ n_distinct(host_data_full$species)
 
 ```
 
+Drop Zerene. Model violation (constant rate?)
+
+```{r}
+tree_colias <- drop.tip(tree_full, "Zerene_cesonia")
+
+plot(tree_colias, cex = 0.5)
+axisPhylo()
+```
+
 ### Data for historical biogeography analysis
 
 Get the intersect between the tree and the distribution data
 
 ```{r}
-spp_geo <- intersect(tree_full$tip.label, geo_data_full$species)
+spp_geo <- intersect(tree_colias$tip.label, geo_data_full$species)
 
 # one species missing distribution data
-setdiff(tree_full$tip.label, geo_data_full$species)
+setdiff(tree_colias$tip.label, geo_data_full$species)
 
-setdiff(geo_data_full$species, tree_full$tip.label)
+setdiff(geo_data_full$species, tree_colias$tip.label)
 ```
 
 Prune tree and distribution data to include only species in both
@@ -44,8 +53,69 @@ Prune tree and distribution data to include only species in both
 ```{r}
 tree_geo <- drop.tip(tree_full, setdiff(tree_full$tip.label, spp_geo))
 tree_geo
+write.tree(tree_geo, "./biogeography/data/tree_colias_geo.tre")
 
 geo_data <- filter(geo_data_full, species %in% spp_geo)
+```
+
+Make nexus data file
+
+```{r}
+geo_data_matrix <- geo_data %>% 
+  mutate(Neotropics = case_when(range == "Neotropical" ~ 1, TRUE ~ 0),
+         Nearctic = case_when(range %in% c("Nearctic", "Nam Asia", "Arctic") ~ 1, TRUE ~ 0),
+         PalearcticEast = case_when(range %in% c("Palearctic East", "East Asia", "Palearctic low",
+                                                 "Nam Asia","Palearctic", "Arctic") ~ 1, TRUE ~ 0),
+         QTP = case_when(range %in% c("QTP", "East Asia", "West QTP", "Palearctic") ~ 1, TRUE ~ 0),
+         SEAsia = case_when(range %in% c("East Asia") ~ 1, TRUE ~ 0),
+         PalearcticWest = case_when(range %in% c("Palearctic West", "West QTP", "Palearctic low",
+                                                 "Palearctic", "Arctic") ~ 1, TRUE ~ 0),
+         Africa = case_when(range == "African" ~ 1, TRUE ~ 0)) %>% 
+  select(-range) %>% 
+  column_to_rownames("species") %>% 
+  as.matrix()
+
+# reorder rows and columns - regions according to order in features
+geo_data_matrix <- geo_data_matrix[tree_geo$tip.label,]
+colnames(geo_data_matrix) <- c("NT","NA","EP","PTP","SA","WP","AF")
+geo_data_matrix <- geo_data_matrix[,c("SA","EP","WP","NA","PTP","AF","NT")] 
+
+write.nexus.data(geo_data_matrix, "./biogeography/data/colias.range.nex", format = "standard")
+```
+
+Create file with color palette for plots
+
+```{r}
+levels = c("Neotropical",
+           "Nearctic",
+           "N_American-Asian",
+           "Arctic",
+           "Palearctic_east",
+           "East_Asian",
+           "QTP",
+           "West_QTP",
+           "Palearctic",
+           "Palearctic_notQTP",
+           "Palearctic_west",
+           "African")
+
+ranges <- c("A","B","BC","BCF","C","CDE","E","EF","CEF","CF","F","G")
+
+palette <- c("#FF8C01",
+             "#DA3541",
+             "#AA74A1",
+             "#6E4672",
+             "#00A2FF",
+             "#00D164",
+             "#F8C700",
+             "#097C65",
+             "#009F52",
+             "#347FD5",
+             "#013459",
+             "#EF9FBA")
+
+colors_df <- tibble(names = levels, ranges = ranges, color = palette)
+
 ```
 
 ### Data for host repertoire evolution analysis
@@ -68,7 +138,6 @@ tree_host
 
 host_data <- filter(host_data_full, species %in% spp_host)
 ```
-
 
 #### Make interaction matrix from edge list
 
@@ -108,6 +177,3 @@ write.csv(matrix_phylo, "./host_repertoire/data/interaction_matrix.csv")
 write.nexus.data(matrix_phylo, "./host_repertoire/data/interaction_matrix.nex", format = "standard")
 # then, fix header to match RevBayes style
 ```
-
-
-

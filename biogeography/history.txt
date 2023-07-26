@@ -1,0 +1,51 @@
+range_fn = "data/colias.range.nex"
+tree_fn   = "data/full_tree_clean.tre"
+out_fn   = "output/epoch"
+geo_fn   = "data/colias"
+times_fn = geo_fn + ".times.txt"
+dat_range_01 = readDiscreteCharacterData(range_fn)
+n_areas <- dat_range_01.nchar()
+n_areas
+max_areas <- 7
+n_states <- 0
+for (k in 0:max_areas) n_states += choose(n_areas, k)
+n_states
+max_areas <- 4
+n_states <- 0
+for (k in 0:max_areas) n_states += choose(n_areas, k)
+n_states
+dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
+time_bounds <- readDataDelimitedFile(file=times_fn, delimiter=" ")
+n_epochs <- time_bounds.nrows()
+n_epochs
+for (i in 1:n_epochs) {
+    epoch_fn = geo_fn + ".connectivity." + i + ".txt"
+    connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+}
+connectivity[i] <- readDataDelimitedFile(file="data/colias.connectivity.1", delimiter=" ")
+connectivity[i] <- readDataDelimitedFile(file="data/colias.connectivity.1.txt", delimiter=" ")
+connectivity[1] <- readDataDelimitedFile(file="data/colias.connectivity.1.txt", delimiter=" ")
+connectivity <- readDataDelimitedFile(file="data/colias.connectivity.1.txt", delimiter=" ")
+?readDataDelimitedFile
+q()
+range_fn = "data/colias.range.nex"
+tree_fn   = "data/full_tree_clean.tre"
+out_fn   = "output/epoch"
+geo_fn   = "data/colias"
+times_fn = geo_fn + ".times.txt"
+dat_range_01 = readDiscreteCharacterData(range_fn)
+n_areas <- dat_range_01.nchar()
+max_areas <- 4
+n_states <- 0
+for (k in 0:max_areas) n_states += choose(n_areas, k)
+# convert binary ranges into NaturalNumbers
+dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
+dat_range_n
+time_bounds <- readDataDelimitedFile(file=times_fn, delimiter=" ")
+n_epochs <- time_bounds.nrows()
+time_bounds
+for (i in 1:n_epochs) {
+    epoch_fn = geo_fn + ".connectivity." + i + ".txt"
+    connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+}
+q()
