@@ -1,2 +1,13 @@
 # colias_hostrep
-Project in collaboration with Houshuai and Sören
+
+This repository contains analyses of historical biogeography, host repertoire evolution, and diversification of the butterfly genus *Colias*.
+
+### html files contain code and results of different analysis steps:
+
+1)  **Data_prepare.html** - prepare data for each analysis (prune and match species included in each data set)
+
+2)  **biogeography/colias_biogeography.html** - analysis of historical biogeography with the MultiFIG model
+
+3)  **diversification/Colias_RPanda.html** - analysis of shifts in diversification
+
+4)  **host_repertoire/colias_host_rep_evol.html** - reconstruction of host repertoire evolution
