@@ -1,6 +1,6 @@
 # colias_hostrep
 
-This repository contains analyses of historical biogeography, host repertoire evolution, and diversification of the butterfly genus *Colias*.
+This repository contains analyses of historical biogeography, host repertoire evolution, and diversification of the butterfly genus *Colias* (manuscript in preparation).
 
 ### html files contain code and results of different analysis steps:
 
