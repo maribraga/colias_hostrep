@@ -8,6 +8,6 @@ This repository contains analyses of historical biogeography, host repertoire ev
 
 2)  **biogeography/colias_biogeography.html** - analysis of historical biogeography with the MultiFIG model
 
-3)  **diversification/Colias_RPanda.html** - analysis of shifts in diversification
+3)  **diversification/Colias_RPanda.html**<http://htmlpreview.github.io/?https://github.com/maribraga/colias_hostrep/blob/main/diversification/Colias_RPanda.html> - analysis of shifts in diversification
 
 4)  **host_repertoire/colias_host_rep_evol.html** - reconstruction of host repertoire evolution
