@@ -5,6 +5,8 @@
 
 RevBayes/output/*.txt
 **/.DS_Store
-ignore/**
 
-biogeography/data
+ignore/**
+**/ignore
+**/*_ignore
+
