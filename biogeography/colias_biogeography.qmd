@@ -71,14 +71,14 @@ Read files and prepare plot
 ```{r}
 tree <- read.tree(here("biogeography/data/tree_colias_geo.tre"))
 tips <- tree$tip.label
-plot(tree, cex = 0.5)
+#plot(tree, cex = 0.5)
 
 original_states <- read.csv(here("biogeography/data/colias_geo_tbl.csv")) %>% 
   filter(species %in% tips) %>% 
   arrange(factor(species, levels = tips))
 
 tree$tip.label <- pull(original_states, range)
-plot(tree, cex = 0.5)
+#plot(tree, cex = 0.5)
 
 # end_state_1 values in ase.tre
 end_states <- c(1,2,3,4,5,6,9,11,14,15,19,25,31,32,34,67,108)
@@ -114,10 +114,12 @@ states <- processAncStates(tree_file, state_labels = labels_all)
 Plot ancestral range distributions
 
 ```{r}
+#| fig-width: 10
+#| fig-height: 9
 plotAncStatesMAP(t=states,
                  tree_layout="rectangular",
                  tip_labels_offset = 0.4,
-                 node_size=1.5,
+                 node_size=2,
                  node_color_as="state",
                  node_color=colors,
                  node_size_as=NULL) +
