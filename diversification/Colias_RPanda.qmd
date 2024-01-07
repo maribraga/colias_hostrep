@@ -1,11 +1,16 @@
 ---
-title: "Colias_RPanda"
+title: "Colias diversification with RPanda"
 author: "Mariana P Braga"
+date: Sys.Date()
 format: 
   html:
     code-fold: show
     code-summary: "Show the code"
-editor: visual
+execute: 
+  warning: false
+editor: source
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Diversification rate shifts in Colias
@@ -23,6 +28,8 @@ Packages
 library(ape)
 library(RPANDA)
 library(RColorBrewer)
+library(here)
+library(dplyr)
 
 # library(phytools)
 # library(phangorn)
@@ -38,9 +45,9 @@ Load the data
 
 ```{r}
 
-tree <- readRDS("tree_Colias.rds") 
-groups <- readRDS("groups.rds")
-
+tree <- read.tree(here("data_prepare/data/processed/Colias_full_tree_clean.tre"))
+groups <- readRDS("~/repos/colias_hostrep/diversification/ignore/groups.rds")
+eastwest <- select(groups, -north_south)
 ```
 
 Shift combinations
@@ -52,8 +59,8 @@ Shift combinations
 sfrac <- get.sampling.fractions(tree, groups, plot = TRUE, cex = 0.5)
 node_comb <- get.comb.shift(tree, groups, sfrac)
 
-par(mfrow=c(2,2))
-for(i in 1:4){
+par(mfrow=c(1,2))
+for(i in 1:length(node_comb)){
   plot.phylo.comb(phylo = tree, 
                 data = groups, 
                 sampling.fractions = sfrac, 
@@ -84,7 +91,7 @@ shifts <- shift.estimates(phylo = tree,
 str(shifts, max.level = 1)
 head(shifts$total)
 shifts$backbones$`75/`
-
+shifts$subclades$'75'
 ```
 
 Rates and diversity across time
@@ -147,7 +154,6 @@ lines(time, paleodiversity["backbone",], col = "black")
 legend("topleft", legend = c("Backbone", "After shift"), col = c("black", group_colors[1]), lty = 1)
 ```
 
-
 ## Model adequacy
 
 To test whether the selected model is adequate, we can simulate data with that model and then compare them to the empirical data. If the model is adequate, it will produce data similar to the observed empirical data.
@@ -159,7 +165,8 @@ posterior_trees <- simul.comb.shift(phylo = tree, sampling.fractions = sfrac, sh
 
 # Number of tips per group
 
-ntip_by_groups <- lapply(posterior_trees, function(x) table(sapply(strsplit(x$tip.label, split = ""), "[[", 1))) 
+ntip_by_groups <- lapply(posterior_trees, function(x)     
+  table(sapply(strsplit(x$tip.label, split = ""), "[[", 1))) 
 ntip_by_groups_df <- as.data.frame(do.call(rbind, ntip_by_groups)) 
 ntip_by_groups_colias <- c(73,7)
 
@@ -189,7 +196,7 @@ hist(avgLeafDepI_posteriors,
      main = "Distribution of average leaf depth index",
      xlab = "Average leaf depth", las = 1) 
 abline(v = avgLeafDepI, col = "red")
-
+dev.off()
 ```
 
 ```{r}
@@ -229,4 +236,3 @@ legend("topleft", legend = c("95% of the distribution of simulated trees around 
 
 sum(points_in_colias)/length(points_in_colias)
 ```
-

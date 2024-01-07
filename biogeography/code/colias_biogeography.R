@@ -4,7 +4,7 @@ library(tidyverse)
 library(sf)
 sf::sf_use_s2(FALSE)
 
-bioregions <- st_read("./biogeography/data/bioregions.geojson") 
+bioregions <- st_read("./biogeography/data_ignore/bioregions.geojson") 
 
 palette <- c("NT" = "#FF8C01",
              "NA" = "#DA3541",
@@ -32,7 +32,7 @@ library(regionfeatures)
 #areas <- areas(data, filepath="~/repos/sswiston-regionfeatures/regionfeatures_package/data", format="CSV")
 
 # comment to Sarah: it only works if you are in the parent directory to /data
-setwd("/Users/mari/repos/colias_hostrep/biogeography/data/regionfeatures")
+setwd("/Users/mari/repos/colias_hostrep/biogeography/data_ignore/regionfeatures")
 data_7regions <- load_shapefile("./data/shapefiles/bioregions.shp", "biome")
 
 # comment to Sarah: have to change the projection to equal area
@@ -94,6 +94,9 @@ prmatrix(bio1$sameness)
 
 
 # Generate distances
+
+# This worked in July, but not in December 2023
+# Error in reorder_matrix(reorder, adjacency) : Incorrect number of labels
 
 # find bug
 distances <- distances(data_7regions_equal, filepath="./data", format="CSV")

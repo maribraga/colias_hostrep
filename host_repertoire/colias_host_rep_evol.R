@@ -114,25 +114,25 @@ max = kd_beta(0)
 #' **Trees**
 #' 
 #' We use `read_tree_from_revbayes` to read the Colias tree because this file was exported from RevBayes and contains the node labels given by RevBayes. This will be very important in the analysis!
-path_data <- "ignore/2s_new_tree/data/"
-path_evol <- "ignore/2s_new_tree/evolnets/"
+path_data <- "host_repertoire/data/"
+path_evol <- "host_repertoire/evolnets/"
+path_out <- "host_repertoire/output/"
 
-tree <- read_tree_from_revbayes(paste0(path_evol,"tree_final_Rev.tre"))
+tree <- read_tree_from_revbayes(paste0(path_evol,"tree_Rev.tre"))
 host_tree <- read.tree(paste0(path_data,"host_tree.tre"))
 
 #' **Extant network**
 #' 
 #' This matrix contains 0s and 2s because in the host repertoire model in RevBayes, there are 3 possible states (0,1,2), where 1 means "potential host" and 2 means "actual host". We used the 2-state model for the reconstruction in RevBayes, so we are only interested in the 0s and 2s, no potential host.
 #' 
-matrix <- read.csv(paste0(path_data,"matrix_phylo_timetree.csv"), row.names = 1) %>% as.matrix()
+matrix <- read.csv(paste0(path_data,"interaction_matrix_all_hosts.csv"), row.names = 1) %>% as.matrix()
 
 #' **Read in .history.txt files**
 #' 
 #' We'll use the *evolnets* function `read_history()` to read a file outputed from RevBayes with sampled histories during MCMC
 #'  
-history <- read_history(paste0(path_out, "out.5.2b.colias.history.txt"), burnin = 0) %>% 
+history <- read_history(paste0(path_out, "out.5.2b.colias.history.txt"), burnin = 0) %>%
   filter(iteration %in% its)
-
 
 #' #### Number of events and effective rate of evolution
 #' 
@@ -328,6 +328,7 @@ mod_val$mean_support
 
 #+ ancestral_states, fig.width = 15, fig.height = 13, dpi = 300
 at_nodes <- posterior_at_nodes(history, tree, host_tree)
+
 p_asr <- plot_matrix_phylo(matrix, at_nodes, tree, host_tree, modules = mod, threshold = 0.9, colors = pal_extant)
 p_asr[[2]] <- p_asr[[2]] + theme(axis.text = element_text(face = "italic"))
 p_asr
@@ -387,8 +388,6 @@ plot_param
 
 ###  
 */
-
-
 
 
 

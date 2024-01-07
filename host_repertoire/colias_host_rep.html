@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>colias_host_repertoire</title>
+<title>Reconstruction of host repertoire evolution in Colias butterflies</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -45,7 +79,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">colias_host_repertoire</h1>
+<h1 class="title">Reconstruction of host repertoire evolution in <em>Colias</em> butterflies</h1>
 </div>
 
 
@@ -60,8 +94,585 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<section id="reconstruction-of-host-repertoire-evolution-in-colias" class="level2">
-<h2 class="anchored" data-anchor-id="reconstruction-of-host-repertoire-evolution-in-colias">Reconstruction of host repertoire evolution in <em>Colias</em></h2>
+<p>We start with packages and paths to subfolders</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(evolnets)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MCMCpack)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(coda)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kdensity)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ape)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(phytools)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(treeio)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtree)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bipartite)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>path_data <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"host_repertoire/data/"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>path_evol <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"host_repertoire/evolnets/"</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"host_repertoire/output/"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="convergence-test" class="level2">
+<h2 class="anchored" data-anchor-id="convergence-test">Convergence test</h2>
+<p>The first thing we need to do is to check that independent MCMC chains have converged to the same posterior distribution. Both chains have achieved an effective sample size ESS &gt; 200 for every parameter.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">paste0</span>(path_out,<span class="st">"out.2.colias_m0_62h.log"</span>), <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>log2 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">paste0</span>(path_out,<span class="st">"out.4.colias_m0_62h.log"</span>), <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>log3 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="fu">paste0</span>(path_out,<span class="st">"out.5.colias_m0_62h.log"</span>), <span class="at">header =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># take only columns of interest</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>log1 <span class="ot">&lt;-</span> log1[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>log2 <span class="ot">&lt;-</span> log2[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>log3 <span class="ot">&lt;-</span> log3[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># give them better column names</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(log1) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(log2) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(log3) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"iteration"</span>,<span class="st">"clock"</span>, <span class="st">"gain"</span>, <span class="st">"loss"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># burnin (decided looking at TRACER) and change sampling frequency to 100 (instead of 50) to match history files</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>log1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(log1, iteration <span class="sc">&gt;</span> <span class="dv">20000</span> <span class="sc">&amp;</span> iteration<span class="sc">%%</span><span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>log2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(log2, iteration <span class="sc">&gt;</span> <span class="dv">50000</span> <span class="sc">&amp;</span> iteration<span class="sc">%%</span><span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>log3 <span class="ot">&lt;-</span> <span class="fu">filter</span>(log3, iteration <span class="sc">&gt;</span> <span class="dv">50000</span> <span class="sc">&amp;</span> iteration<span class="sc">%%</span><span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># thin chains so that they have the same length</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>nsamples <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>samples1 <span class="ot">&lt;-</span> <span class="fu">sample</span>(log1<span class="sc">$</span>iteration, nsamples, <span class="at">replace =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">sort</span>()</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>samples2 <span class="ot">&lt;-</span> <span class="fu">sample</span>(log2<span class="sc">$</span>iteration, nsamples, <span class="at">replace =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">sort</span>()</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>samples3 <span class="ot">&lt;-</span> <span class="fu">sample</span>(log3<span class="sc">$</span>iteration, nsamples, <span class="at">replace =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">sort</span>()</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>chain1 <span class="ot">&lt;-</span> log1 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples1) <span class="sc">%&gt;%</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="dv">1</span><span class="sc">:</span>nsamples)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>chain2 <span class="ot">&lt;-</span> log2 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples2) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="dv">1</span><span class="sc">:</span>nsamples)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>chain3 <span class="ot">&lt;-</span> log3 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples3) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="dv">1</span><span class="sc">:</span>nsamples)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="fu">gelman.diag</span>(<span class="fu">mcmc.list</span>(<span class="fu">as.mcmc</span>(chain1), <span class="fu">as.mcmc</span>(chain2)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Potential scale reduction factors:
+
+          Point est. Upper C.I.
+iteration        NaN        NaN
+clock           1.01       1.03
+gain            1.01       1.03
+loss            1.01       1.03
+
+Multivariate psrf
+
+1</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gelman.diag</span>(<span class="fu">mcmc.list</span>(<span class="fu">as.mcmc</span>(chain1), <span class="fu">as.mcmc</span>(chain3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Potential scale reduction factors:
+
+          Point est. Upper C.I.
+iteration        NaN        NaN
+clock           1.00       1.01
+gain            1.02       1.07
+loss            1.02       1.07
+
+Multivariate psrf
+
+1.02</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gelman.diag</span>(<span class="fu">mcmc.list</span>(<span class="fu">as.mcmc</span>(chain3), <span class="fu">as.mcmc</span>(chain2)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Potential scale reduction factors:
+
+          Point est. Upper C.I.
+iteration        NaN        NaN
+clock           1.01       1.06
+gain            1.00       1.01
+loss            1.00       1.01
+
+Multivariate psrf
+
+1.02</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(chain1[,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   clock     gain     loss 
+241.7925 212.2858 212.2860 </code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(chain2[,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   clock     gain     loss 
+261.6044 104.2189 104.2188 </code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(chain3[,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   clock     gain     loss 
+218.0983 368.1212 368.1212 </code></pre>
+</div>
+</div>
+<p><strong>RESULT from convergence test</strong>: all three chains have converged to the same posterior, so we’ll combine all chains for the next analyses.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>logs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(chain1,chain2,chain3) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(.))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(logs[,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   clock     gain     loss 
+676.9705 434.6249 434.6248 </code></pre>
+</div>
+</div>
+</section>
+<section id="parameter-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-estimates">Parameter estimates</h2>
+<p>Now, we can plot the posterior distributions for each model parameter.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>parameters <span class="ot">&lt;-</span> logs <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">names_to =</span> <span class="st">"parameter"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>plot_param <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(parameters, <span class="fu">aes</span>(parameter, value)) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="at">col =</span> <span class="st">"white"</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun.data =</span> <span class="st">"median_hilow"</span>, <span class="at">color =</span> <span class="st">"#E76F51"</span>, <span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(parameter), <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>plot_param</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="768"></p>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>parameters <span class="sc">%&gt;%</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(parameter) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean =</span> <span class="fu">mean</span>(value),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">HPD.95.low =</span> <span class="fu">HPDinterval</span>(<span class="fu">mcmc</span>(value))[<span class="dv">1</span>],</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">HPD.95.high =</span> <span class="fu">HPDinterval</span>(<span class="fu">mcmc</span>(value))[<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  parameter   mean HPD.95.low HPD.95.high
+  &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+1 clock     0.476      0.395       0.559 
+2 gain      0.0563     0.0450      0.0698
+3 loss      0.944      0.930       0.955 </code></pre>
+</div>
+</div>
+<p>These parameter values are hard to interpret. We can get better estimates from the simulated character histories below.</p>
+</section>
+<section id="character-history" class="level2">
+<h2 class="anchored" data-anchor-id="character-history">Character history</h2>
+<p>Let’s move on to reconstruction of the history of evolution of host repertoire across the Colias phylogeny.</p>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>This matrix contains 0s and 2s because in the host repertoire model in RevBayes, there are 3 possible states (0,1,2), where 1 means “potential host” and 2 means “actual host”. We used the 2-state model for the reconstruction in RevBayes, so we are only interested in the 0s and 2s, no potential host.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>matrix <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(path_data,<span class="st">"interaction_matrix_all_hosts.csv"</span>), <span class="at">row.names =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Many of the following analyses will group host plants and butterfly species by module. So let’s first determine the module structure that will be used. Because we use an optimization algorithm to find the module configuration that results in maximum network modularity, each run will likely have a different result. Thus, it is recommended to run the algorithm a few times and choose the most modular configuration.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mod_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>){</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  mod_list[[i]] <span class="ot">&lt;-</span> <span class="fu">mycomputeModules</span>(matrix)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The last run produced the highest modularity, so we’ll use that module configuration. Then we can plot the observed interactions organized by module. Grey squares represent interactions between modules (i.e., butterfly and plant that interact but were placed in different modules).</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(mod_list, <span class="cf">function</span>(x) x<span class="sc">@</span>likelihood) <span class="sc">%&gt;%</span> <span class="fu">unlist</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] 0.4168244 0.4170331 0.4182257 0.4192245 0.4149312 0.4104292 0.4187326
+ [8] 0.4202084 0.4283627 0.4326560</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> mod_list[[<span class="dv">10</span>]]</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>pal_extant <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#BC292D"</span>,<span class="st">"#003049"</span>,<span class="st">"#FCBF49"</span>,<span class="st">"#219EBC"</span>,<span class="st">"#F77F00"</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_extant_matrix</span>(matrix, mod) <span class="sc">+</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> pal_extant)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="960"></p>
+</div>
+</div>
+<p>We use <code>read_tree_from_revbayes</code> to read the Colias tree because this file was exported from RevBayes and contains the node labels given by RevBayes. This will be very important in the analysis!</p>
+<p>Because we found that the phylogenetic distance between hosts does not affect the probability of gaining a new hosts from preliminary analyses, this analysis does not include a phylogenetic tree for the host plants. <code>evolnets</code> expects a host tree, however, so we’ll create one, but it won’t affect any results.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">read_tree_from_revbayes</span>(<span class="fu">paste0</span>(path_evol,<span class="st">"tree_Rev.tre"</span>))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>host_tree <span class="ot">&lt;-</span> <span class="fu">starTree</span>(<span class="fu">colnames</span>(matrix))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We’ll use the <em>evolnets</em> function <code>read_history()</code> to read the files outputed from RevBayes with sampled histories during MCMC. Then we remove burnin interations and combine all three chains.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read files, thin the same way we thinned the log files, and rename iterations so that they can be combined</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>hist1 <span class="ot">&lt;-</span> <span class="fu">read_history</span>(<span class="fu">paste0</span>(path_out, <span class="st">"out.2_thin.txt"</span>), <span class="at">burnin =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples1) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">original_iter =</span> iteration) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="fu">dense_rank</span>(original_iter), <span class="at">.before =</span> original_iter)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>hist2 <span class="ot">&lt;-</span> <span class="fu">read_history</span>(<span class="fu">paste0</span>(path_out, <span class="st">"out.4_thin.txt"</span>), <span class="at">burnin =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples2) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">original_iter =</span> iteration) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="fu">dense_rank</span>(original_iter) <span class="sc">+</span> <span class="fu">max</span>(hist1<span class="sc">$</span>iteration), <span class="at">.before =</span> original_iter)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>hist3 <span class="ot">&lt;-</span> <span class="fu">read_history</span>(<span class="fu">paste0</span>(path_out, <span class="st">"out.5_thin.txt"</span>), <span class="at">burnin =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iteration <span class="sc">%in%</span> samples3) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">original_iter =</span> iteration) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iteration =</span> <span class="fu">dense_rank</span>(original_iter) <span class="sc">+</span> <span class="fu">max</span>(hist2<span class="sc">$</span>iteration), <span class="at">.before =</span> original_iter)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co"># combine all histories</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>history <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(hist1, hist2, hist3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="number-of-events-and-effective-rate-of-evolution" class="level3">
+<h3 class="anchored" data-anchor-id="number-of-events-and-effective-rate-of-evolution">Number of events and effective rate of evolution</h3>
+<p>Estimated number of events across the Colias phylogeny, proportion of gains and losses, and gain and loss rates (events/million of years).</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">count_events</span>(history)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>      mean HPD95.lower HPD95.upper
+1 344.0728         294         398</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>gl <span class="ot">&lt;-</span> <span class="fu">count_gl</span>(history)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>gl<span class="sc">/</span><span class="fu">sum</span>(gl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    gains    losses 
+0.4260703 0.5739297 </code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rate_gl</span>(history, tree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>gain_rate loss_rate 
+ 1.521198  2.049100 </code></pre>
+</div>
+</div>
+</section>
+<section id="interaction-probability-at-internal-nodes" class="level3">
+<h3 class="anchored" data-anchor-id="interaction-probability-at-internal-nodes">Interaction probability at internal nodes</h3>
+<p>Ancestral states estimates with posterior probability &gt; 0.9.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>at_nodes <span class="ot">&lt;-</span> <span class="fu">posterior_at_nodes</span>(history, tree, host_tree)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>p_asr <span class="ot">&lt;-</span> <span class="fu">plot_matrix_phylo</span>(matrix, at_nodes, tree, host_tree, </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">modules =</span> mod, <span class="at">threshold =</span> <span class="fl">0.9</span>, <span class="at">colors =</span> pal_extant)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>p_asr[[<span class="dv">2</span>]] <span class="ot">&lt;-</span> p_asr[[<span class="dv">2</span>]] <span class="sc">+</span> </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">limits =</span> host_tree<span class="sc">$</span>tip.label[mod<span class="sc">@</span>orderB]) <span class="sc">+</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"italic"</span>, <span class="at">size =</span> <span class="dv">6</span>))</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>p_asr[[<span class="dv">4</span>]] <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>p_asr </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="960"></p>
+</div>
+</div>
+<p><strong>Root state</strong></p>
+<p>Ancestral interactions with posterior probability &gt; 0.9 at nodes of interest.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>nodes_of_interest <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Index_"</span>,<span class="fu">c</span>(<span class="dv">109</span>,<span class="dv">108</span>,<span class="dv">107</span>,<span class="dv">106</span>,<span class="dv">105</span>,<span class="dv">101</span>,<span class="dv">85</span>,<span class="dv">83</span>,<span class="dv">75</span>,<span class="dv">66</span>,<span class="dv">61</span>,<span class="dv">60</span>))</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># root state</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>mrca_states <span class="ot">&lt;-</span> at_nodes<span class="sc">$</span>post_states[nodes_of_interest,,] <span class="sc">%&gt;%</span> </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"node"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">63</span>, <span class="at">names_to =</span> <span class="st">"host"</span>, <span class="at">values_to =</span> <span class="st">"pp"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pp <span class="sc">&gt;</span> <span class="fl">0.9</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mrca_states, <span class="at">n =</span> <span class="fu">nrow</span>(mrca_states))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 36 × 3
+   node      host          pp
+   &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt;
+ 1 Index_109 Astragalus 0.985
+ 2 Index_109 Trifolium  1    
+ 3 Index_108 Astragalus 1    
+ 4 Index_108 Oxytropis  0.967
+ 5 Index_108 Trifolium  0.998
+ 6 Index_107 Astragalus 1    
+ 7 Index_107 Oxytropis  0.973
+ 8 Index_107 Trifolium  0.999
+ 9 Index_106 Astragalus 1    
+10 Index_106 Oxytropis  0.975
+11 Index_106 Trifolium  1    
+12 Index_105 Astragalus 1    
+13 Index_105 Oxytropis  0.999
+14 Index_105 Trifolium  1    
+15 Index_101 Vaccinium  0.944
+16 Index_101 Astragalus 1    
+17 Index_101 Lupinus    0.985
+18 Index_101 Oxytropis  0.999
+19 Index_101 Trifolium  0.987
+20 Index_101 Hedysarum  0.993
+21 Index_85  Astragalus 1    
+22 Index_85  Trifolium  0.991
+23 Index_83  Astragalus 0.999
+24 Index_83  Vicia      0.919
+25 Index_83  Trifolium  0.991
+26 Index_83  Lotus      0.919
+27 Index_75  Astragalus 0.996
+28 Index_75  Oxytropis  0.951
+29 Index_75  Trifolium  0.945
+30 Index_66  Astragalus 0.999
+31 Index_66  Oxytropis  0.962
+32 Index_61  Astragalus 0.952
+33 Index_61  Trifolium  0.999
+34 Index_60  Astragalus 0.975
+35 Index_60  Medicago   0.997
+36 Index_60  Trifolium  0.999</code></pre>
+</div>
+</div>
+</section>
+<section id="ancestral-networks" class="level3">
+<h3 class="anchored" data-anchor-id="ancestral-networks">Ancestral networks</h3>
+<p><strong>Time points of interest (ages)</strong></p>
+<p>The first step to reconstruct ancestral networks is to define the time points during Colias diversification that we want to look at.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visually determine interesting time points to reconstruct ancestral networks</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pt <span class="ot">&lt;-</span> <span class="fu">ggtree</span>(tree) <span class="sc">+</span> </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tiplab</span>() <span class="sc">+</span> </span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_nodelab</span>(<span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"grey40"</span>) <span class="sc">+</span> </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_tree2</span>()</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>pt_rev <span class="ot">&lt;-</span> <span class="fu">revts</span>(pt) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">3.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>pt_rev_ages <span class="ot">&lt;-</span> pt_rev <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">3</span>,<span class="sc">-</span><span class="dv">2</span>,<span class="sc">-</span><span class="dv">1</span>,<span class="dv">0</span>), <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>pt_rev_ages</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" style="width:60.0%"></p>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># choose time points</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>ages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>I’ve chosen 3, 2, and 1 million years ago.</p>
+<p><strong>Interaction probability at given ages</strong></p>
+<p>Now we calculate the posterior probability of interaction between each host and each extant butterfly at each age in <code>ages</code>.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>at_ages <span class="ot">&lt;-</span> <span class="fu">posterior_at_ages</span>(history, ages, tree, host_tree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><strong>Summarize probabilities into ancestral networks</strong></p>
+<p>Make binary or weighted networks? Discard interactions with posterior probability &lt; threshold. I chose to reconstruct weighted networks with a threshold of 0.7.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>summary_networks <span class="ot">&lt;-</span> <span class="fu">get_summary_networks</span>(at_ages, <span class="at">threshold =</span> <span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Then we identify the modules at each ancestral network and match modules across ages.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find modules in extant and ancestral networks</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>modules_at_ages <span class="ot">&lt;-</span> <span class="fu">modules_across_ages</span>(summary_networks, tree, <span class="at">extant_modules =</span> mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><strong>Plot ancestral networks</strong></p>
+<p>Colors show modules and weight is the posterior probability of that interaction.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>mods_pal <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(modules_at_ages<span class="sc">$</span>matched_modules<span class="sc">$</span>original_and_matched_module_names<span class="sc">$</span>module_name))</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#BC292D"</span>,<span class="st">"#972125"</span>,<span class="st">"#DA585C"</span>,<span class="st">"#003049"</span>,<span class="st">"#FCBF49"</span>,</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">"#219EBC"</span>,<span class="st">"#125669"</span>,<span class="st">"#1C829C"</span>,<span class="st">"#74D0E7"</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"#F77F00"</span>,<span class="st">"#DA7407"</span>,<span class="st">"#F89C3A"</span>)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>p_nets <span class="ot">&lt;-</span> <span class="fu">plot_ancestral_networks</span>(summary_networks, modules_at_ages, tree, <span class="at">colors =</span> pal, <span class="at">node_size =</span> <span class="dv">2</span>)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(p_nets, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>), <span class="at">guides =</span> <span class="st">"collect"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="3600"></p>
+</div>
+</div>
+<p><strong>Plot ancestral networks as matrices</strong></p>
+<p>An alternative way to visualize the networks is by plotting them as matrices.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create plots with a matrix for each age</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>p_mod_matrix_ages <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(ages)){</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> ages[i]</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  net <span class="ot">&lt;-</span> summary_networks[[<span class="fu">as.character</span>(a)]] <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  mod_df <span class="ot">&lt;-</span> modules_at_ages<span class="sc">$</span>matched_modules<span class="sc">$</span>nodes_and_modules_per_age <span class="sc">%&gt;%</span> </span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(age <span class="sc">==</span> a) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(name, module, type)</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(a <span class="sc">!=</span> <span class="dv">0</span>){</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    plot <span class="ot">&lt;-</span> <span class="fu">plot_extant_matrix</span>(net, mod_df) <span class="sc">+</span> </span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> pal, <span class="at">breaks =</span> mods_pal) <span class="sc">+</span></span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste0</span>(a,<span class="st">" Ma"</span>))</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span>{</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># names of matched modules for extant network</span></span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>    match_mod_ext <span class="ot">&lt;-</span> modules_at_ages<span class="sc">$</span>matched_modules<span class="sc">$</span>nodes_and_modules_per_age <span class="sc">%&gt;%</span> </span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(age <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(name, module, type)</span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>    mod_order <span class="ot">&lt;-</span> match_mod_ext <span class="sc">%&gt;%</span> </span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"host"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(module) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>      <span class="fu">pull</span>(name)</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>    mod_order_para <span class="ot">&lt;-</span> match_mod_ext <span class="sc">%&gt;%</span> </span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"symbiont"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(module) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">pull</span>(name)</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>    p_ext_mods <span class="ot">&lt;-</span> <span class="fu">plot_extant_matrix</span>(matrix, match_mod_ext, </span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">parasite_order =</span> mod_order_para, </span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">host_order =</span> mod_order)</span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a>    p_ext_mods <span class="sc">+</span> <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> pal_extant)</span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a>    plot <span class="ot">&lt;-</span> <span class="fu">plot_extant_matrix</span>(net, mod_df, </span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a>                               <span class="at">parasite_order =</span> mod_order_para, </span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a>                               <span class="at">host_order =</span> mod_order) <span class="sc">+</span> </span>
+<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> pal, <span class="at">breaks =</span> mods_pal) <span class="sc">+</span></span>
+<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste0</span>(a,<span class="st">" Ma"</span>))</span>
+<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a>  p_mod_matrix_ages[[i]] <span class="ot">&lt;-</span> plot</span>
+<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a><span class="co"># define the layout of the plot</span></span>
+<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a>layout <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">4</span>),</span>
+<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">7</span>,<span class="dv">3</span>),</span>
+<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">9</span>,<span class="dv">2</span>),</span>
+<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">10</span>,<span class="dv">1</span>,<span class="dv">10</span>,<span class="dv">1</span>)</span>
+<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-59"><a href="#cb41-59" aria-hidden="true" tabindex="-1"></a><span class="co"># plot!</span></span>
+<span id="cb41-60"><a href="#cb41-60" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(p_mod_matrix_ages, <span class="at">design =</span> layout, <span class="at">guides =</span> <span class="st">"keep"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" style="width:80.0%"></p>
+</div>
+</div>
+<p><strong>Module validation</strong></p>
+<p>We use modules to facilitate visualization but sometimes they also have biological meaning. This step tells us whether the modules in the ancestral networks are robust across MCMC samples or an artifact of the summary networks.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>samples_at_ages <span class="ot">&lt;-</span> <span class="fu">get_sampled_networks</span>(at_ages)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>mod_samples <span class="ot">&lt;-</span> <span class="fu">modules_from_samples</span>(samples_at_ages)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>In this figure, the more grey, the less robust the modules are. As before, grey represents interactions between modules.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mod_val <span class="ot">&lt;-</span> <span class="fu">support_for_modules</span>(mod_samples, modules_at_ages, <span class="at">colors =</span> pal)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>layout_val <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">4</span>),</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">7</span>,<span class="dv">3</span>),</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">area</span>(<span class="dv">8</span>,<span class="dv">1</span>,<span class="dv">9</span>,<span class="dv">2</span>)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(<span class="fu">rev</span>(mod_val<span class="sc">$</span>plot), <span class="at">design =</span> layout_val, <span class="at">guides =</span> <span class="st">"collect"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" style="width:80.0%"></p>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>mod_val<span class="sc">$</span>mean_support</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$`3`
+  module      mean  geo_mean
+1   M1.1 0.6748257 0.6079714
+2   M1.2 0.8406765 0.8339086
+
+$`2`
+  module      mean  geo_mean
+1   M1.1 0.3699399 0.2924190
+2   M1.2 0.4706275 0.3919507
+3     M4 0.9760050 0.9758289
+
+$`1`
+  module      mean  geo_mean
+1   M1.1 0.7027704 0.6636145
+2   M1.2 0.5801254 0.5555022
+3     M3 0.8421160 0.8373115
+4   M4.1 0.6045637 0.4863790
+5   M4.2 0.5938856 0.5359651
+6   M4.3 0.4822479 0.2152629
+7   M5.1 0.9220210 0.9202647
+8   M5.2 0.5373498 0.3863625</code></pre>
+</div>
+</div>
+<p><strong>RESULT from module validation</strong>: 3 Ma, there was only one module; 2 Ma, M4 is robust, but M1.1 and M1.2 could still be together; some modules at 1 Ma are robust and others are weaker.</p>
+</section>
 </section>
 
 </main>

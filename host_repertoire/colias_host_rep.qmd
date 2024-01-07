@@ -1,8 +1,451 @@
 ---
-title: "colias_host_repertoire"
-format: html
+title: "Reconstruction of host repertoire evolution in *Colias* butterflies"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show the code"
 editor: source
+editor_options: 
+  chunk_output_type: console
+execute:
+  warning: false
 ---
 
-## Reconstruction of host repertoire evolution in *Colias*
+We start with packages and paths to subfolders
+
+```{r}
+#| output: false
+library(evolnets)
+library(MCMCpack)
+library(coda)
+library(kdensity)
+library(igraph)
+library(ape)
+library(phytools)
+library(treeio)
+library(ggtree)
+library(patchwork)
+library(bipartite)
+library(tidyverse)
+library(here)
+
+path_data <- here("host_repertoire/data/")
+path_evol <- here("host_repertoire/evolnets/")
+path_out <- here("host_repertoire/output/")
+```
+
+## Convergence test
+
+The first thing we need to do is to check that independent MCMC chains have converged to the same posterior distribution. Both chains have achieved an effective sample size ESS > 200 for every parameter.
+
+```{r}
+log1 <- read.table(paste0(path_out,"out.2.colias_m0_62h.log"), header = TRUE)
+log2 <- read.table(paste0(path_out,"out.4.colias_m0_62h.log"), header = TRUE)
+log3 <- read.table(paste0(path_out,"out.5.colias_m0_62h.log"), header = TRUE)
+
+# take only columns of interest
+log1 <- log1[,c(1,5:7)]
+log2 <- log2[,c(1,5:7)]
+log3 <- log3[,c(1,5:7)]
+
+# give them better column names
+colnames(log1) <- colnames(log2) <- colnames(log3) <- c("iteration","clock", "gain", "loss")
+
+# burnin (decided looking at TRACER) and change sampling frequency to 100 (instead of 50) to match history files
+log1 <- filter(log1, iteration > 20000 & iteration%%100 == 0)
+log2 <- filter(log2, iteration > 50000 & iteration%%100 == 0)
+log3 <- filter(log3, iteration > 50000 & iteration%%100 == 0)
+
+# thin chains so that they have the same length
+nsamples <- 500
+samples1 <- sample(log1$iteration, nsamples, replace = FALSE) %>% sort()
+samples2 <- sample(log2$iteration, nsamples, replace = FALSE) %>% sort()
+samples3 <- sample(log3$iteration, nsamples, replace = FALSE) %>% sort()
+
+chain1 <- log1 %>% 
+  filter(iteration %in% samples1) %>%
+  mutate(iteration = 1:nsamples)
+
+chain2 <- log2 %>% 
+  filter(iteration %in% samples2) %>% 
+  mutate(iteration = 1:nsamples)
+
+chain3 <- log3 %>% 
+  filter(iteration %in% samples3) %>% 
+  mutate(iteration = 1:nsamples)
+
+gelman.diag(mcmc.list(as.mcmc(chain1), as.mcmc(chain2)))
+gelman.diag(mcmc.list(as.mcmc(chain1), as.mcmc(chain3)))
+gelman.diag(mcmc.list(as.mcmc(chain3), as.mcmc(chain2)))
+
+effectiveSize(chain1[,2:4])
+effectiveSize(chain2[,2:4])
+effectiveSize(chain3[,2:4])
+```
+
+**RESULT from convergence test**: all three chains have converged to the same posterior, so we'll combine all chains for the next analyses.
+
+```{r}
+logs <- bind_rows(chain1,chain2,chain3) %>% 
+  mutate(iteration = 1:nrow(.))
+
+effectiveSize(logs[,2:4])
+```
+
+
+## Parameter estimates
+
+Now, we can plot the posterior distributions for each model parameter.
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+
+parameters <- logs %>% 
+  pivot_longer(cols = 2:4, names_to = "parameter", values_to = "value")
+
+plot_param <- ggplot(parameters, aes(parameter, value)) +
+  geom_violin(col = "white", fill = "steelblue", alpha = 0.4) +
+  stat_summary(fun.data = "median_hilow", color = "#E76F51", size = 0.5) +
+  facet_grid(cols = vars(parameter), scales = "free") +
+  theme_bw()
+plot_param
+
+parameters %>% 
+  group_by(parameter) %>% 
+  summarise(mean = mean(value),
+            HPD.95.low = HPDinterval(mcmc(value))[1],
+            HPD.95.high = HPDinterval(mcmc(value))[2])
+
+```
+
+These parameter values are hard to interpret. We can get better estimates from the simulated character histories below.
+
+## Character history
+
+Let's move on to reconstruction of the history of evolution of host repertoire across the Colias phylogeny.
+
+### Data
+
+This matrix contains 0s and 2s because in the host repertoire model in RevBayes, there are 3 possible states (0,1,2), where 1 means "potential host" and 2 means "actual host". We used the 2-state model for the reconstruction in RevBayes, so we are only interested in the 0s and 2s, no potential host.
+
+```{r}
+matrix <- read.csv(paste0(path_data,"interaction_matrix_all_hosts.csv"), row.names = 1) %>% as.matrix()
+
+```
+
+Many of the following analyses will group host plants and butterfly species by module. So let's first determine the module structure that will be used. Because we use an optimization algorithm to find the module configuration that results in maximum network modularity, each run will likely have a different result. Thus, it is recommended to run the algorithm a few times and choose the most modular configuration.
+
+```{r}
+#| eval: false
+mod_list <- list()
+for(i in 1:10){
+  mod_list[[i]] <- mycomputeModules(matrix)
+}
+```
+
+```{r}
+#| echo: false
+#saveRDS(mod_list, paste0(path_evol, "mod_list.rds"))
+#saveRDS(mod_list[[10]], paste0(path_evol, "5mods_highest.rds"))
+mod_list <- readRDS(paste0(path_evol, "mod_list.rds"))
+```
+
+The last run produced the highest modularity, so we'll use that module configuration. Then we can plot the observed interactions organized by module. Grey squares represent interactions between modules (i.e., butterfly and plant that interact but were placed in different modules).
+
+```{r}
+#| fig-width: 10
+#| fig-height: 10
+lapply(mod_list, function(x) x@likelihood) %>% unlist()
+
+mod <- mod_list[[10]]
+
+pal_extant <- c("#BC292D","#003049","#FCBF49","#219EBC","#F77F00")
+
+plot_extant_matrix(matrix, mod) +
+  scale_fill_manual(values = pal_extant)
+```
+
+We use `read_tree_from_revbayes` to read the Colias tree because this file was exported from RevBayes and contains the node labels given by RevBayes. This will be very important in the analysis!
+
+Because we found that the phylogenetic distance between hosts does not affect the probability of gaining a new hosts from preliminary analyses, this analysis does not include a phylogenetic tree for the host plants. `evolnets` expects a host tree, however, so we'll create one, but it won't affect any results.
+
+```{r}
+tree <- read_tree_from_revbayes(paste0(path_evol,"tree_Rev.tre"))
+host_tree <- starTree(colnames(matrix))
+```
+
+We'll use the *evolnets* function `read_history()` to read the files outputed from RevBayes with sampled histories during MCMC. Then we remove burnin interations and combine all three chains.
+
+```{r}
+# read files, thin the same way we thinned the log files, and rename iterations so that they can be combined
+hist1 <- read_history(paste0(path_out, "out.2_thin.txt"), burnin = 0) %>% 
+  filter(iteration %in% samples1) %>% 
+  rename(original_iter = iteration) %>% 
+  mutate(iteration = dense_rank(original_iter), .before = original_iter)
+hist2 <- read_history(paste0(path_out, "out.4_thin.txt"), burnin = 0) %>% 
+  filter(iteration %in% samples2) %>% 
+  rename(original_iter = iteration) %>% 
+  mutate(iteration = dense_rank(original_iter) + max(hist1$iteration), .before = original_iter)
+hist3 <- read_history(paste0(path_out, "out.5_thin.txt"), burnin = 0) %>% 
+  filter(iteration %in% samples3) %>% 
+  rename(original_iter = iteration) %>% 
+  mutate(iteration = dense_rank(original_iter) + max(hist2$iteration), .before = original_iter)
+
+# combine all histories
+history <- bind_rows(hist1, hist2, hist3)
+
+```
+
+### Number of events and effective rate of evolution
+
+Estimated number of events across the Colias phylogeny, proportion of gains and losses, and gain and loss rates (events/million of years).
+```{r}
+count_events(history)
+gl <- count_gl(history)
+gl/sum(gl)
+rate_gl(history, tree)
+```
+
+### Interaction probability at internal nodes
+
+Ancestral states estimates with posterior probability > 0.9.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 10
+at_nodes <- posterior_at_nodes(history, tree, host_tree)
+
+p_asr <- plot_matrix_phylo(matrix, at_nodes, tree, host_tree, 
+                           modules = mod, threshold = 0.9, colors = pal_extant)
+
+p_asr[[2]] <- p_asr[[2]] + 
+  scale_x_discrete(limits = host_tree$tip.label[mod@orderB]) +
+  theme(axis.text = element_text(face = "italic", size = 6))
+p_asr[[4]] <- NULL
+
+p_asr 
+```
+
+**Root state**
+
+Ancestral interactions with posterior probability > 0.9 at nodes of interest.
+
+```{r}
+
+nodes_of_interest <- paste0("Index_",c(109,108,107,106,105,101,85,83,75,66,61,60))
+
+# root state
+mrca_states <- at_nodes$post_states[nodes_of_interest,,] %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "node") %>% 
+  pivot_longer(2:63, names_to = "host", values_to = "pp") %>% 
+  filter(pp > 0.9)
+  
+print(mrca_states, n = nrow(mrca_states))
+```
+
+
+### Ancestral networks
+
+**Time points of interest (ages)**
+
+The first step to reconstruct ancestral networks is to define the time points during Colias diversification that we want to look at.
+ 
+```{r}
+#| fig-width: 6 
+#| fig.height: 8 
+#| out.width: '60%'
+#| dpi: 300
+
+# visually determine interesting time points to reconstruct ancestral networks
+pt <- ggtree(tree) + 
+  geom_tiplab() + 
+  geom_nodelab(size = 3, color = "grey40") + 
+  theme_tree2()
+
+pt_rev <- revts(pt) + xlim(c(-3.5, 0.5))
+
+pt_rev_ages <- pt_rev + geom_vline(xintercept = c(-3,-2,-1,0), col = "blue")
+pt_rev_ages
+
+# choose time points
+ages <- c(0,1,2,3)
+```
+
+I've chosen 3, 2, and 1 million years ago. 
+
+**Interaction probability at given ages**
+
+Now we calculate the posterior probability of interaction between each host and each extant butterfly at each age in `ages`.
+
+```{r}
+at_ages <- posterior_at_ages(history, ages, tree, host_tree)
+```
+
+**Summarize probabilities into ancestral networks**
+
+Make binary or weighted networks? Discard interactions with posterior probability < threshold.
+I chose to reconstruct weighted networks with a threshold of 0.7.
+
+```{r}
+summary_networks <- get_summary_networks(at_ages, threshold = 0.7)
+```
+
+Then we identify the modules at each ancestral network and match modules across ages.
+
+```{r}
+#| eval: false
+
+# find modules in extant and ancestral networks
+modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
+```
+
+```{r}
+#| echo: false
+# set.seed(112)
+# modules_at_ages <- modules_across_ages(summary_networks, tree, extant_modules = mod)
+# saveRDS(modules_at_ages, paste0(path_evol,"matched_modules_70_5m_seed112.rds"))
+modules_at_ages <- readRDS(paste0(path_evol,"matched_modules_70_5m_seed112.rds"))
+```
+
+**Plot ancestral networks**
+
+Colors show modules and weight is the posterior probability of that interaction.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 10
+#| dpi: 300
+
+mods_pal <- sort(unique(modules_at_ages$matched_modules$original_and_matched_module_names$module_name))
+pal <- c("#BC292D","#972125","#DA585C","#003049","#FCBF49",
+         "#219EBC","#125669","#1C829C","#74D0E7",
+         "#F77F00","#DA7407","#F89C3A")
+
+p_nets <- plot_ancestral_networks(summary_networks, modules_at_ages, tree, colors = pal, node_size = 2)
+wrap_plots(p_nets, heights = c(2,3), guides = "collect")
+```
+
+
+**Plot ancestral networks as matrices**
+
+An alternative way to visualize the networks is by plotting them as matrices.
+
+```{r}
+#| fig-width: 7
+#| fig-height: 22
+#| dpi: 300
+#| out.width: '80%'
+
+# create plots with a matrix for each age
+p_mod_matrix_ages <- list()
+
+for(i in seq_along(ages)){
+  
+  a <- ages[i]
+  
+  net <- summary_networks[[as.character(a)]] %>% as.matrix()
+    
+  mod_df <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+      filter(age == a) %>% 
+      select(name, module, type)
+    
+  if(a != 0){
+    
+    plot <- plot_extant_matrix(net, mod_df) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
+    
+  } else{
+    
+    # names of matched modules for extant network
+    match_mod_ext <- modules_at_ages$matched_modules$nodes_and_modules_per_age %>% 
+      filter(age == 0) %>% 
+      select(name, module, type)
+    mod_order <- match_mod_ext %>% 
+      filter(type == "host") %>% 
+      arrange(module) %>% 
+      pull(name)
+    mod_order_para <- match_mod_ext %>% 
+      filter(type == "symbiont") %>% 
+      arrange(module) %>% 
+      pull(name)
+    
+    p_ext_mods <- plot_extant_matrix(matrix, match_mod_ext, 
+                                     parasite_order = mod_order_para, 
+                                     host_order = mod_order)
+    p_ext_mods + scale_fill_manual(values = pal_extant)
+    
+    plot <- plot_extant_matrix(net, mod_df, 
+                               parasite_order = mod_order_para, 
+                               host_order = mod_order) + 
+      scale_fill_manual(values = pal, breaks = mods_pal) +
+      labs(title = paste0(a," Ma"))
+  }
+  
+  p_mod_matrix_ages[[i]] <- plot
+  
+}
+
+# define the layout of the plot
+layout <- c(
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2),
+  area(10,1,10,1)
+)
+
+# plot!
+wrap_plots(p_mod_matrix_ages, design = layout, guides = "keep")
+
+```
+
+
+**Module validation**
+
+We use modules to facilitate visualization but sometimes they also have biological meaning. This step tells us whether the modules in the ancestral networks are robust across MCMC samples or an artifact of the summary networks.
+ 
+```{r}
+samples_at_ages <- get_sampled_networks(at_ages)
+
+```
+ 
+```{r}
+#| eval: false
+mod_samples <- modules_from_samples(samples_at_ages)
+```
+
+```{r}
+#| echo: false
+#saveRDS(mod_samples, paste0(path_evol, "mod_samples.rds"))
+mod_samples <- readRDS(paste0(path_evol, "mod_samples.rds"))
+# took  3 hours and 20 min!
+```
+
+
+In this figure, the more grey, the less robust the modules are. As before, grey represents interactions between modules.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 12
+#| out.width: '80%'
+#| dpi: 300
+
+mod_val <- support_for_modules(mod_samples, modules_at_ages, colors = pal)
+
+layout_val <- c(
+  area(1,1,4,4),
+  area(5,1,7,3),
+  area(8,1,9,2)
+  )
+wrap_plots(rev(mod_val$plot), design = layout_val, guides = "collect")
+
+mod_val$mean_support
+```
+
+**RESULT from module validation**: 3 Ma, there was only one module; 2 Ma, M4 is robust, but M1.1 and M1.2 could still be together; some modules at 1 Ma are robust and others are weaker.
+
+
+
 

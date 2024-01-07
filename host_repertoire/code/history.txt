@@ -1,0 +1,99 @@
+seed(out_id)
+fp = "/Users/mari/repos/colias_hostrep/host_repertoire/"
+data_fp = fp + "data/"
+out_fp = fp + "output/"
+phy_plant_fn = data_fp + "host_tree.tre"
+phy_insect_fn = data_fp + "tree_host.tre"
+dat_insect_fn = data_fp + "interaction_matrix.nex"
+out_fn = out_fp + out_str + sim_str
+phy_plant <- readTrees(phy_plant_fn)[1]
+phy_insect <- readTrees(phy_insect_fn)[1]
+dat_insect <- readDiscreteCharacterData(dat_insect_fn)
+mni = 1
+mvi = 1
+n_gen = 10 # 1e6
+n_burn = 0
+sample_freq = 1 # 500
+n_plant_tips <- phy_plant.ntips()
+n_plant_branches <- 2 * n_plant_tips - 2
+n_insect_branches <- 2 * phy_insect.ntips() - 2
+n_sites <- dat_insect.nchar()
+switch_rates_pos ~ dnDirichlet( [1,1] )
+switch_rates_pos.setValue([0.1,0.9])
+switch_rate_0_to_1 := 1e-6
+switch_rate_0_to_2 := switch_rates_pos[1]
+switch_rate_1_to_0 := 1e-6
+switch_rate_1_to_2 := 1e-6
+switch_rate_2_to_0 := switch_rates_pos[2]
+switch_rate_2_to_1 := 1e-6
+switch_rates := v( switch_rate_0_to_1, switch_rate_0_to_2, switch_rate_1_to_0, switch_rate_1_to_2, switch_rate_2_to_0, switch_rate_2_to_1 )
+Q_char := fnFreeK( switch_rates, false, "eigen" )
+phy_scale[1] ~ dnExp(1)
+phy_scale[1].setValue(0)
+phy_scale[2] := phy_scale[1]
+rate_modifiers[1] := fnHostSwitchRateModifier(tree=phy_plant, gainScale=phy_scale)
+Q_host := fnRateGeneratorSequence(Q=Q_char,
+                                  numChars=n_sites,
+                                  rateModifiers=rate_modifiers)
+clock_host ~ dnExp(1)
+rf_host <- simplex(1,0,1)
+m_host ~ dnPhyloCTMCDASequence(tree=phy_insect,
+                               Q=Q_host,
+                               branchRates=clock_host,
+                               rootFrequencies=rf_host,
+                               nSites=n_sites,
+                               type="Standard")
+m_host.clamp(dat_insect)
+if (!exists("sim_str")) sim_str = "colias_m0"
+if (!exists("out_str")) out_str = "out_"
+if (!exists("out_id")) out_id = 1
+out_str = out_str + out_id
+seed(out_id)
+fp = "/Users/mari/repos/colias_hostrep/host_repertoire/"
+data_fp = fp + "data/"
+out_fp = fp + "output/"
+phy_plant_fn = data_fp + "host_tree.tre"
+phy_insect_fn = data_fp + "tree_host.tre"
+dat_insect_fn = data_fp + "interaction_matrix2.nex"
+out_fn = out_fp + out_str + sim_str
+phy_plant <- readTrees(phy_plant_fn)[1]
+phy_insect <- readTrees(phy_insect_fn)[1]
+dat_insect <- readDiscreteCharacterData(dat_insect_fn)
+mni = 1
+mvi = 1
+n_gen = 10 # 1e6
+n_burn = 0
+sample_freq = 1 # 500
+n_plant_tips <- phy_plant.ntips()
+n_plant_branches <- 2 * n_plant_tips - 2
+n_insect_branches <- 2 * phy_insect.ntips() - 2
+n_sites <- dat_insect.nchar()
+switch_rates_pos ~ dnDirichlet( [1,1] )
+switch_rates_pos.setValue([0.1,0.9])
+switch_rate_0_to_1 := 1e-6
+switch_rate_0_to_2 := switch_rates_pos[1]
+switch_rate_1_to_0 := 1e-6
+switch_rate_1_to_2 := 1e-6
+switch_rate_2_to_0 := switch_rates_pos[2]
+switch_rate_2_to_1 := 1e-6
+switch_rates := v( switch_rate_0_to_1, switch_rate_0_to_2, switch_rate_1_to_0, switch_rate_1_to_2, switch_rate_2_to_0, switch_rate_2_to_1 )
+Q_char := fnFreeK( switch_rates, false, "eigen" )
+phy_scale[1] ~ dnExp(1)
+phy_scale[1].setValue(0)
+phy_scale[2] := phy_scale[1]
+rate_modifiers[1] := fnHostSwitchRateModifier(tree=phy_plant, gainScale=phy_scale)
+Q_host := fnRateGeneratorSequence(Q=Q_char,
+                                  numChars=n_sites,
+                                  rateModifiers=rate_modifiers)
+clock_host ~ dnExp(1)
+rf_host <- simplex(1,0,1)
+m_host ~ dnPhyloCTMCDASequence(tree=phy_insect,
+                               Q=Q_host,
+                               branchRates=clock_host,
+                               rootFrequencies=rf_host,
+                               nSites=n_sites,
+                               type="Standard")
+phy_insect
+dat_insect
+m_host.clamp(dat_insect)
+source("colias_m0.Rev")

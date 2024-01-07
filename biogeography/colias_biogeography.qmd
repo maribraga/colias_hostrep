@@ -1,7 +1,24 @@
 ---
-title: "Colias_biogeography"
+title: "Colias biogeography"
+date: Sys.Date()
 format: html
 editor: source
+execute: 
+  warning: false
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Historical Biogeography of *Colias* using MultiFIG
+
+Packages
+
+```{r}
+#| label: "packages"
+#| message: FALSE
+
+library(RevGadgets)
+library(tidyverse)
+library(ape)
+
+```
