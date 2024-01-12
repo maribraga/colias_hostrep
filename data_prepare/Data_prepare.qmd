@@ -103,6 +103,8 @@ tree_colias <- read.tree(here("data_prepare/data/processed/Colias_full_tree_clea
 
 ### Data for historical biogeography analysis
 
+#### Analysis WITH Zerene (outgroup)
+
 Get the intersect between the tree and the distribution data
 
 ```{r}
@@ -132,8 +134,8 @@ Make nexus data file
 
 ```{r}
 geo_data_matrix <- geo_data %>% 
-  mutate(Neotropics = case_when(range == "Neotropical" ~ 1, TRUE ~ 0),
-         Nearctic = case_when(range %in% c("Nearctic", "Nam Asia", "Arctic") ~ 1, TRUE ~ 0),
+  mutate(Neotropics = case_when(range %in% c("Neotropical", "Americas") ~ 1, TRUE ~ 0),
+         Nearctic = case_when(range %in% c("Nearctic", "Nam Asia", "Arctic", "Americas") ~ 1, TRUE ~ 0),
          PalearcticEast = case_when(range %in% c("Palearctic East", "East Asia", "Palearctic low",
                                                  "Nam Asia","Palearctic", "Arctic") ~ 1, TRUE ~ 0),
          QTP = case_when(range %in% c("QTP", "East Asia", "West QTP", "Palearctic") ~ 1, TRUE ~ 0),
@@ -156,6 +158,7 @@ Create file with color palette for plots
 ```{r}
 levels = c("Neotropical",
            "Nearctic",
+           "Americas",
            "N_American-Asian",
            "Arctic",
            "Palearctic_east",
@@ -164,6 +167,113 @@ levels = c("Neotropical",
            "West_QTP",
            "Palearctic",
            "Palearctic_notQTP",
+           "Palearctic_west",
+           "African")
+
+ranges <- c("A","B","AB","BC","BCF","C","CDE","E","EF","CEF","CF","F","G")
+
+palette <- c("#FF8C01",
+             "#DA3541",
+             "darkred",
+             "#AA74A1",
+             "#6E4672",
+             "#00A2FF",
+             "#00D164",
+             "#F8C700",
+             "#097C65",
+             "#009F52",
+             "#347FD5",
+             "#013459",
+             "#EF9FBA")
+
+colors_df <- tibble(names = levels, ranges = ranges, color = palette)
+
+```
+
+**Write out data for RevBayes**
+
+```{r}
+#| eval: false
+
+# write.tree(tree_geo, here("biogeography/with_zerene/data/tree_colias_geo.tre"))
+# write.nexus.data(geo_data_matrix, here("biogeography/with_zerene/data/colias_geo.nex"), format = "standard")
+# 
+# write.csv(geo_data, here("biogeography/with_zerene/data/colias_geo_tbl.csv"), row.names = FALSE)
+# write.csv(geo_data_matrix, here("biogeography/with_zerene/data/colias_geo_mtx.csv"), row.names = TRUE)
+# write.csv(colors_df, here("biogeography/with_zerene/data/colias_geo_palette.csv"), row.names = FALSE)
+
+# Add subroot branch to tree - NOT NECESSARY
+# tree_geo_string <- readLines(here("biogeography/with_zerene/data/tree_colias_geo.tre"))
+# tree_geo_subroot_string <- sub(");$", "):0.01;", tree_geo_string)
+# writeLines(tree_geo_subroot_string, here("biogeography/with_zerene/data/tree_colias_geo_subroot.tre"))
+
+```
+
+#### Analysis WITHOUT Zerene (outgroup)
+
+Get the intersect between the tree and the distribution data
+
+```{r}
+geo_data_full <- read.csv(here("data_prepare/data/original/Colias_distribution.csv")) %>% 
+  mutate(range = case_when(range == "QTP" ~ "PTH", range == "West QTP" ~ "West PTH", TRUE ~ range))
+
+Ntip(tree_colias)
+n_distinct(geo_data_full$species)
+spp_geo <- intersect(tree_colias$tip.label, geo_data_full$species)
+
+setdiff(tree_colias$tip.label, geo_data_full$species)
+# one species missing distribution data
+
+setdiff(geo_data_full$species, tree_colias$tip.label)
+# and 14 not in the tree (when including Zerene)
+```
+
+Prune tree and distribution data to include only species in both
+
+```{r}
+tree_geo <- drop.tip(tree_colias, setdiff(tree_colias$tip.label, spp_geo))
+tree_geo
+
+geo_data <- filter(geo_data_full, species %in% spp_geo)
+```
+
+Make nexus data file
+
+```{r}
+sort(unique(geo_data$range))
+geo_data_matrix <- geo_data %>% 
+  mutate(Neotropics = case_when(range == "Neotropical" ~ 1, TRUE ~ 0),
+         Nearctic = case_when(range %in% c("Nearctic", "Nam Asia", "Arctic") ~ 1, TRUE ~ 0),
+         PalearcticEast = case_when(range %in% c("Palearctic East", "East Asia", "Palearctic low",
+                                                 "Nam Asia","Palearctic", "Arctic") ~ 1, TRUE ~ 0),
+         PTH = case_when(range %in% c("PTH", "East Asia", "West PTH", "Palearctic") ~ 1, TRUE ~ 0),
+         SEAsia = case_when(range %in% c("East Asia") ~ 1, TRUE ~ 0),
+         PalearcticWest = case_when(range %in% c("Palearctic West", "West PTH", "Palearctic low",
+                                                 "Palearctic", "Arctic") ~ 1, TRUE ~ 0),
+         Africa = case_when(range == "African" ~ 1, TRUE ~ 0)) %>% 
+  select(-range) %>% 
+  column_to_rownames("species") %>% 
+  as.matrix()
+
+# reorder rows and columns - regions according to order in features
+geo_data_matrix <- geo_data_matrix[tree_geo$tip.label,]
+colnames(geo_data_matrix) <- c("NTr","NAr","EPa","PTP","SEA","WPa","Afr")
+geo_data_matrix <- geo_data_matrix[,c("SEA","EPa","WPa","NAr","PTH","Afr","NTr")] 
+```
+
+Create file with color palette for plots
+
+```{r}
+levels = c("Neotropical",
+           "Nearctic",
+           "N_American-Asian",
+           "Arctic",
+           "Palearctic_east",
+           "East_Asian",
+           "PTH",
+           "West_PTH",
+           "Palearctic",
+           "Palearctic_notPTH",
            "Palearctic_west",
            "African")
 
@@ -191,17 +301,17 @@ colors_df <- tibble(names = levels, ranges = ranges, color = palette)
 ```{r}
 #| eval: false
 
-# write.tree(tree_geo, here("biogeography/data/tree_colias_geo.tre"))
-# write.nexus.data(geo_data_matrix, here("biogeography/data/colias_geo.nex"), format = "standard")
-# 
-# write.csv(geo_data, here("biogeography/data/colias_geo_tbl.csv"), row.names = FALSE)
-# write.csv(geo_data_matrix, here("biogeography/data/colias_geo_mtx.csv"), row.names = TRUE)
-# write.csv(colors_df, here("biogeography/data/colias_geo_palette.csv"), row.names = FALSE)
+write.tree(tree_geo, here("biogeography/without_zerene/data/tree_colias_geo.tre"))
+write.nexus.data(geo_data_matrix, here("biogeography/without_zerene/data/colias_geo.nex"), format = "standard")
 
-# Add subroot branch to tree
-tree_geo_string <- readLines(here("biogeography/data/tree_colias_geo.tre"))
-tree_geo_subroot_string <- sub(");$", "):0.01;", tree_geo_string)
-writeLines(tree_geo_subroot_string, here("biogeography/data/tree_colias_geo_subroot.tre"))
+write.csv(geo_data, here("biogeography/without_zerene/data/colias_geo_tbl.csv"), row.names = FALSE)
+write.csv(geo_data_matrix, here("biogeography/without_zerene/data/colias_geo_mtx.csv"), row.names = TRUE)
+write.csv(colors_df, here("biogeography/without_zerene/data/colias_geo_palette.csv"), row.names = FALSE)
+
+# Add subroot branch to tree - NOT NECESSARY
+# tree_geo_string <- readLines(here("biogeography/without_zerene/data/tree_colias_geo.tre"))
+# tree_geo_subroot_string <- sub(");$", "):0.01;", tree_geo_string)
+# writeLines(tree_geo_subroot_string, here("biogeography/without_zerene/data/tree_colias_geo_subroot.tre"))
 
 ```
 

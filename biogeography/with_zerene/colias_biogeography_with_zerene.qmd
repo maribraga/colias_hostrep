@@ -74,8 +74,9 @@ tips <- tree$tip.label
 #plot(tree, cex = 0.5)
 
 original_states <- read.csv(here("biogeography/data/colias_geo_tbl.csv")) %>% 
-  filter(species %in% tips) %>% 
   arrange(factor(species, levels = tips))
+
+identical(sort(tree$tip.label), sort(original_states$species))
 
 tree$tip.label <- pull(original_states, range)
 #plot(tree, cex = 0.5)
