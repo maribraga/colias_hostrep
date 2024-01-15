@@ -19,13 +19,14 @@ Packages
 #| label: "packages"
 #| message: FALSE
 
-library(RevGadgets)
-library(tidyverse)
-library(patchwork)
-library(ape)
 library(sf)
 sf::sf_use_s2(FALSE)
+library(RevGadgets)
+library(patchwork)
+library(ape)
+library(coda)
 library(here)
+library(tidyverse)
 ```
 
 Plot the regions and their colors.
@@ -36,20 +37,20 @@ Plot the regions and their colors.
 bioregions <- st_read(here("biogeography/data_ignore/bioregions.geojson"))
 
 palette_fill <- c("NT" = "#FF8C01",
-             "NA" = "#DA3541",
-             "EP" = "#00A2FF",
-             "PTP" = "#F8C700",
-             "WP" = "#013459",
-             "AF" = "#EF9FBA",
-             "SA" = "white")
+                  "NA" = "#DA3541",
+                  "EP" = "#00A2FF",
+                  "PTP" = "#F8C700",
+                  "WP" = "#013459",
+                  "AF" = "#EF9FBA",
+                  "SA" = "white")
 
 palette_col <- c("NT" = "#FF8C01",
-             "NA" = "#DA3541",
-             "EP" = "#00A2FF",
-             "PTP" = "#F8C700",
-             "WP" = "#013459",
-             "AF" = "#EF9FBA",
-             "SA" = "grey30")
+                 "NA" = "#DA3541",
+                 "EP" = "#00A2FF",
+                 "PTP" = "#F8C700",
+                 "WP" = "#013459",
+                 "AF" = "#EF9FBA",
+                 "SA" = "grey30")
 
 ggplot(bioregions) +
   geom_sf(aes(fill = biome, col = biome)) +
@@ -62,69 +63,35 @@ ggplot(bioregions) +
 Determine paths of output files from RevBayes MULTIFIG analysis and to save figures.
 
 ```{r}
-tree_file <- here("biogeography/without_zerene/server_ignore/output/run2/ase.tre")
-log_file <- here("biogeography/without_zerene/server_ignore/output/run2/model.log")
+log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run1/model.log")
+log_file2 <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/model.log")
+geo_log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log")
+tree_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre")
 state_label_file <- here("biogeography/without_zerene/server_ignore/output/run2/state_labels.txt")
 anc_states_file <- here("biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf")
 plot_2d_file <- here("biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf")
 ```
 
-Read files and prepare plot
-
-```{r}
-tree <- read.tree(here("biogeography/without_zerene/data/tree_colias_geo.tre"))
-
-original_states <- read.csv(here("biogeography/without_zerene/data/colias_geo_tbl.csv")) %>% 
-  arrange(factor(species, levels = tree$tip.label))
-
-identical(sort(tree$tip.label), sort(original_states$species))
-
-range_matrix <- read.csv(here("biogeography/without_zerene/data/colias_geo_mtx.csv"), row.names = 1)
-area_codes <- rep(1, ncol(range_matrix))
-names(area_codes) <- colnames(range_matrix)
-area_codes
-
-state_labels <- read.csv(here("biogeography/without_zerene/server_ignore/output/run1/state_labels.txt"), 
-                         colClasses = c("numeric","character")) %>% 
-  separate_wider_position(range, widths = area_codes) %>% 
-  pivot_longer(2:8, names_to = "area", values_to = "present") %>% 
-  filter(present == 1) %>% 
-  select(-present) %>% 
-  group_by(state) %>% 
-  reframe(combination = str_c(area, collapse = "+"))
-
-labels_all <- pull(state_labels, combination) %>% as.character()
-names(labels_all) <- state_labels$state
-  
-states <- processAncStates(tree_file, state_labels = labels_all)
-```
-
-Plot ancestral range distributions
-
-```{r}
-#| fig-width: 8.5
-#| fig-height: 7.5
-
-states_plot <- sort(unique(states@data$end_state_1))
-palette <- c("#EF9FBA","#00A2FF","#AA74A1","#7CB580","#347FD5","#6E4672","#9A6F4F","#C9722C",
-             "#009F52","#DA3541","#FF8C01","#F8C700","#00D164","#013459","#C38CA8","#097C65")
-names(palette) <- states_plot
-
-plotAncStatesMAP(t=states,
-                 cladogenetic = TRUE,
-                 tree_layout="rectangular",
-                 tip_labels_offset = 0.1,
-                 node_color_as="state",
-                 node_color=palette,
-                 state_transparency = 0.85,
-                 node_size = c(0.7,2),
-                 tip_states_size = 2,
-                 node_size_as="state_posterior",
-                 timeline = TRUE,
-                 geo = FALSE)
-```
 
 ## Parameter estimates
+
+The first things to do is to check that independent MCMC chains have converged to the same posterior distribution.
+
+```{r}
+log1 <- read.table(log_file, header = TRUE) %>% filter(Iteration > 5000)
+log2 <- read.table(log_file2, header = TRUE) %>% filter(Iteration > 5000)
+
+# take one parameter of each type to test
+chain1 <- log1[,c(5,132,141,267,268,271,272,276,281,285,288,289,291)]
+chain2 <- log2[,c(5,132,141,267,268,271,272,276,281,285,288,289,291)]
+
+# Convergence test
+gelman.diag(mcmc.list(as.mcmc(chain1), as.mcmc(chain2)), multivariate = FALSE)
+
+effectiveSize(chain1)
+effectiveSize(chain2)
+```
+
 
 Because there is one categorical and one quantitative parameter for each feature (e.g. area, distance, and altitude),
 we will look at the joint probability for each pair of parameters that correspond to the effect of the same feature
@@ -135,7 +102,7 @@ over the same process (e.g. dispersal, extinction, between-region speciation and
 #| fig-height: 9
 
 # read logs from MCMC
-trace <- readTrace(path=log_file)
+trace <- readTrace(path=log_file2)
 
 # 2d density
 
@@ -168,19 +135,19 @@ wrap_plots(list_2d, ncol=2)
 # calculate joint pp
 
 trace_d <- trace[[1]] %>% 
-  select(Iteration, `phi_d[1]`, `sigma_d[1]`) %>% 
+  dplyr::select(Iteration, `phi_d[1]`, `sigma_d[1]`) %>% 
   mutate(joint_p = case_when(`phi_d[1]` >= 0 & `sigma_d[1]` >= 0 ~ "both_positive",
                              TRUE ~ "one_or_both_negative"))
 trace_e <- trace[[1]] %>% 
-  select(Iteration, `phi_e[1]`, `sigma_e[1]`) %>% 
+  dplyr::select(Iteration, `phi_e[1]`, `sigma_e[1]`) %>% 
   mutate(joint_p = case_when(`phi_e[1]` >= 0 & `sigma_e[1]` >= 0 ~ "both_positive",
                              TRUE ~ "one_or_both_negative"))
 trace_b <- trace[[1]] %>% 
-  select(Iteration, `phi_b[1]`, `sigma_b[1]`) %>% 
+  dplyr::select(Iteration, `phi_b[1]`, `sigma_b[1]`) %>% 
   mutate(joint_p = case_when(`phi_b[1]` >= 0 & `sigma_b[1]` >= 0 ~ "both_positive",
                              TRUE ~ "one_or_both_negative"))
 trace_w <- trace[[1]] %>% 
-  select(Iteration, `phi_w[1]`, `sigma_w[1]`) %>% 
+  dplyr::select(Iteration, `phi_w[1]`, `sigma_w[1]`) %>% 
   mutate(joint_p = case_when(`phi_w[1]` >= 0 & `sigma_w[1]` >= 0 ~ "both_positive",
                              TRUE ~ "one_or_both_negative"))
 ```
@@ -217,4 +184,102 @@ trace_w %>%
   group_by(joint_p) %>% 
   summarise(n = n()/nrow(.))
 ```
+
+
+Posterior distribution of individual parameters (Supplementary)
+
+```{r}
+sigma_list <- list()
+for(i in seq_along(sigmas)){
+  sigma_list[i] <- plotTrace(trace, vars = sigmas[i])  
+}
+wrap_plots(sigma_list, ncol = 2)
+
+
+phi_list <- list()
+for(i in seq_along(phis)){
+  phi_list[i] <- plotTrace(trace, vars = phis[i])  
+}
+wrap_plots(phi_list, ncol = 2)
+```
+
+
+## Ancestral state estimation
+
+```{r}
+tree <- read.tree(here("biogeography/without_zerene/data/tree_colias_geo.tre"))
+
+original_states <- read.csv(here("biogeography/without_zerene/data/colias_geo_tbl.csv")) %>% 
+  arrange(factor(species, levels = tree$tip.label))
+
+identical(sort(tree$tip.label), sort(original_states$species))
+
+range_matrix <- read.csv(here("biogeography/without_zerene/data/colias_geo_mtx.csv"), row.names = 1)
+area_codes <- rep(1, ncol(range_matrix))
+names(area_codes) <- colnames(range_matrix)
+area_codes
+
+state_labels <- read.csv(here("biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"), 
+                         colClasses = c("numeric","character")) %>% 
+  separate_wider_position(range, widths = area_codes) %>% 
+  pivot_longer(2:8, names_to = "area", values_to = "present") %>% 
+  filter(present == 1) %>% 
+  select(-present) %>% 
+  group_by(state) %>% 
+  reframe(combination = str_c(area, collapse = "+"))
+
+labels_all <- pull(state_labels, combination) %>% as.character()
+names(labels_all) <- state_labels$state
+  
+states <- processAncStates(tree_file, state_labels = labels_all)
+```
+
+Plot ancestral range distributions
+
+```{r}
+#| fig-width: 8.5
+#| fig-height: 7.5
+
+states_plot <- sort(unique(states@data$end_state_1))
+palette <- c("#EF9FBA","#00A2FF","#AA74A1","#7CB580","#347FD5","#6E4672","#9A6F4F","#C9722C",
+             "#009F52","#DA3541","#FF8C01","#F8C700","#00D164","#013459","#C38CA8","#097C65")
+names(palette) <- states_plot
+
+plotAncStatesMAP(t=states,
+                 cladogenetic = TRUE,
+                 tree_layout="rectangular",
+                 tip_labels_offset = 0.1,
+                 tip_labels_size = 3,
+                 node_color_as="state",
+                 node_color=palette,
+                 state_transparency = 0.85,
+                 node_size = c(0.7,2.5),
+                 tip_states_size = 2,
+                 node_size_as="state_posterior",
+                 timeline = TRUE,
+                 geo = FALSE)
+```
+
+
+```{r}
+#| eval: false
+#| echo: false
+
+# Plot the results with pies at nodes
+pie <- plotAncStatesPie(t = states,
+                        cladogenetic = TRUE, 
+                        # Pass in your named and ordered color vector
+                        pie_colors = c(palette, rainbow(n=20)), 
+                        # Offset the tip labels to make room for tip pies
+                        tip_labels_offset = .2, 
+                        tip_labels_size = 3,
+                        # Change the size of node and tip pies  
+                        tip_pie_size = 0.9,
+                        node_pie_size = 1,
+                        timeline = TRUE,
+                        geo = FALSE)
+
+pie
+```
+
 

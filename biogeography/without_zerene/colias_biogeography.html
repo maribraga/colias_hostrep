@@ -100,13 +100,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RevGadgets)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ape)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">sf_use_s2</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">sf_use_s2</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RevGadgets)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ape)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(coda)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Plot the regions and their colors.</p>
@@ -128,20 +129,20 @@ Geodetic CRS:  WGS 84</code></pre>
 <details>
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>palette_fill <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"NT"</span> <span class="ot">=</span> <span class="st">"#FF8C01"</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>             <span class="st">"NA"</span> <span class="ot">=</span> <span class="st">"#DA3541"</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>             <span class="st">"EP"</span> <span class="ot">=</span> <span class="st">"#00A2FF"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>             <span class="st">"PTP"</span> <span class="ot">=</span> <span class="st">"#F8C700"</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             <span class="st">"WP"</span> <span class="ot">=</span> <span class="st">"#013459"</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>             <span class="st">"AF"</span> <span class="ot">=</span> <span class="st">"#EF9FBA"</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>             <span class="st">"SA"</span> <span class="ot">=</span> <span class="st">"white"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"NA"</span> <span class="ot">=</span> <span class="st">"#DA3541"</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"EP"</span> <span class="ot">=</span> <span class="st">"#00A2FF"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"PTP"</span> <span class="ot">=</span> <span class="st">"#F8C700"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"WP"</span> <span class="ot">=</span> <span class="st">"#013459"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"AF"</span> <span class="ot">=</span> <span class="st">"#EF9FBA"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"SA"</span> <span class="ot">=</span> <span class="st">"white"</span>)</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>palette_col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"NT"</span> <span class="ot">=</span> <span class="st">"#FF8C01"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>             <span class="st">"NA"</span> <span class="ot">=</span> <span class="st">"#DA3541"</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>             <span class="st">"EP"</span> <span class="ot">=</span> <span class="st">"#00A2FF"</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>             <span class="st">"PTP"</span> <span class="ot">=</span> <span class="st">"#F8C700"</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>             <span class="st">"WP"</span> <span class="ot">=</span> <span class="st">"#013459"</span>,</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>             <span class="st">"AF"</span> <span class="ot">=</span> <span class="st">"#EF9FBA"</span>,</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>             <span class="st">"SA"</span> <span class="ot">=</span> <span class="st">"grey30"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"NA"</span> <span class="ot">=</span> <span class="st">"#DA3541"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"EP"</span> <span class="ot">=</span> <span class="st">"#00A2FF"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"PTP"</span> <span class="ot">=</span> <span class="st">"#F8C700"</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"WP"</span> <span class="ot">=</span> <span class="st">"#013459"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"AF"</span> <span class="ot">=</span> <span class="st">"#EF9FBA"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"SA"</span> <span class="ot">=</span> <span class="st">"grey30"</span>)</span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bioregions) <span class="sc">+</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">fill =</span> biome, <span class="at">col =</span> biome)) <span class="sc">+</span></span>
@@ -157,33 +158,241 @@ Geodetic CRS:  WGS 84</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tree_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/ase.tre"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/model.log"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>state_label_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/state_labels.txt"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>anc_states_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/anc_states.pdf"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>plot_2d_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/2d_plots.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run1/model.log"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>log_file2 <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/model.log"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>geo_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>tree_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>state_label_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>anc_states_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plot_2d_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Read files and prepare plot</p>
+<section id="parameter-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-estimates">Parameter estimates</h2>
+<p>The first things to do is to check that independent MCMC chains have converged to the same posterior distribution.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">read.tree</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/tree_colias_geo.tre"</span>))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>original_states <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/colias_geo_tbl.csv"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">factor</span>(species, <span class="at">levels =</span> tree<span class="sc">$</span>tip.label))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">sort</span>(tree<span class="sc">$</span>tip.label), <span class="fu">sort</span>(original_states<span class="sc">$</span>species))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(log_file, <span class="at">header =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Iteration <span class="sc">&gt;</span> <span class="dv">5000</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>log2 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(log_file2, <span class="at">header =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Iteration <span class="sc">&gt;</span> <span class="dv">5000</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># take one parameter of each type to test</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>chain1 <span class="ot">&lt;-</span> log1[,<span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">132</span>,<span class="dv">141</span>,<span class="dv">267</span>,<span class="dv">268</span>,<span class="dv">271</span>,<span class="dv">272</span>,<span class="dv">276</span>,<span class="dv">281</span>,<span class="dv">285</span>,<span class="dv">288</span>,<span class="dv">289</span>,<span class="dv">291</span>)]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>chain2 <span class="ot">&lt;-</span> log2[,<span class="fu">c</span>(<span class="dv">5</span>,<span class="dv">132</span>,<span class="dv">141</span>,<span class="dv">267</span>,<span class="dv">268</span>,<span class="dv">271</span>,<span class="dv">272</span>,<span class="dv">276</span>,<span class="dv">281</span>,<span class="dv">285</span>,<span class="dv">288</span>,<span class="dv">289</span>,<span class="dv">291</span>)]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convergence test</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">gelman.diag</span>(<span class="fu">mcmc.list</span>(<span class="fu">as.mcmc</span>(chain1), <span class="fu">as.mcmc</span>(chain2)), <span class="at">multivariate =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Potential scale reduction factors:
+
+           Point est. Upper C.I.
+lambda.1.       1.007       1.02
+m_w.1..1.       1.050       1.09
+mu.3.           1.019       1.03
+phi_b.2.        1.011       1.04
+phi_d.1.        1.001       1.01
+phi_e.2.        1.008       1.01
+phi_w.1.        0.999       1.00
+r_e.3.          1.019       1.03
+rho_b           1.002       1.01
+sigma_b.1.      1.001       1.00
+sigma_d.2.      1.006       1.03
+sigma_e.1.      1.000       1.01
+sigma_w.1.      1.006       1.04</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(chain1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> lambda.1.  m_w.1..1.      mu.3.   phi_b.2.   phi_d.1.   phi_e.2.   phi_w.1. 
+ 351.70618   89.90557  450.00000  450.00000  450.00000  326.73027  450.00000 
+    r_e.3.      rho_b sigma_b.1. sigma_d.2. sigma_e.1. sigma_w.1. 
+ 450.00000  362.17126  450.00000  266.63352  450.00000  216.84123 </code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">effectiveSize</span>(chain2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> lambda.1.  m_w.1..1.      mu.3.   phi_b.2.   phi_d.1.   phi_e.2.   phi_w.1. 
+  536.6021   155.2168   544.8810   450.0000   478.2161   450.0000   386.1634 
+    r_e.3.      rho_b sigma_b.1. sigma_d.2. sigma_e.1. sigma_w.1. 
+  544.8810   368.4646   365.2751   258.3136   328.1960   158.6367 </code></pre>
+</div>
+</div>
+<p>Because there is one categorical and one quantitative parameter for each feature (e.g.&nbsp;area, distance, and altitude), we will look at the joint probability for each pair of parameters that correspond to the effect of the same feature over the same process (e.g.&nbsp;dispersal, extinction, between-region speciation and within-region speciation).</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read logs from MCMC</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>trace <span class="ot">&lt;-</span> <span class="fu">readTrace</span>(<span class="at">path=</span>log_file2)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2d density</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>proc_groups <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"_b"</span>, <span class="st">"_d"</span>, <span class="st">"_e"</span>, <span class="st">"_w"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>phis <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="fu">paste0</span>(<span class="st">"phi"</span>,proc_groups), <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">1</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply</span>(<span class="dv">1</span>, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x,<span class="st">"["</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"]"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>()</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>sigmas <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="fu">paste0</span>(<span class="st">"sigma"</span>,proc_groups), <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">1</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply</span>(<span class="dv">1</span>, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x,<span class="st">"["</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"]"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>()</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>plot_2d <span class="ot">&lt;-</span> <span class="cf">function</span>(trace, <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>){</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(trace[[<span class="dv">1</span>]], <span class="fu">aes</span>(<span class="at">x =</span> .data[[x]], <span class="at">y =</span> .data[[y]])) <span class="sc">+</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">21</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>()</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  p</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>list_2d <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(sigmas)){</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>  list_2d[[i]] <span class="ot">&lt;-</span> <span class="fu">plot_2d</span>(trace, <span class="at">x =</span> phis[i], <span class="at">y =</span> sigmas[i])</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(list_2d, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate joint pp</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>trace_d <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_d[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_d[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_d[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_d[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>trace_e <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_e[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_e[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_e[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_e[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>trace_b <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_b[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_b[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_b[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_b[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>trace_w <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_w[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_w[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_w[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_w[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Effect of distance between areas on dispersal</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>trace_d <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  joint_p                    n
+  &lt;chr&gt;                  &lt;dbl&gt;
+1 both_positive        0.00889
+2 one_or_both_negative 0.991  </code></pre>
+</div>
+</div>
+<p>Effect of area size on extinction</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>trace_e <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  joint_p                   n
+  &lt;chr&gt;                 &lt;dbl&gt;
+1 both_positive        0.0667
+2 one_or_both_negative 0.933 </code></pre>
+</div>
+</div>
+<p>Effect of distance on between-region speciation</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>trace_b <span class="sc">%&gt;%</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  joint_p                   n
+  &lt;chr&gt;                 &lt;dbl&gt;
+1 both_positive        0.0867
+2 one_or_both_negative 0.913 </code></pre>
+</div>
+</div>
+<p>Effect of area size on within-region speciation</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>trace_w <span class="sc">%&gt;%</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  joint_p                  n
+  &lt;chr&gt;                &lt;dbl&gt;
+1 both_positive        0.287
+2 one_or_both_negative 0.713</code></pre>
+</div>
+</div>
+<p>Posterior distribution of individual parameters (Supplementary)</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sigma_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(sigmas)){</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  sigma_list[i] <span class="ot">&lt;-</span> <span class="fu">plotTrace</span>(trace, <span class="at">vars =</span> sigmas[i])  </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(sigma_list, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>phi_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(phis)){</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  phi_list[i] <span class="ot">&lt;-</span> <span class="fu">plotTrace</span>(trace, <span class="at">vars =</span> phis[i])  </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(phi_list, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="ancestral-state-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="ancestral-state-estimation">Ancestral state estimation</h2>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">read.tree</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/tree_colias_geo.tre"</span>))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>original_states <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/colias_geo_tbl.csv"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">factor</span>(species, <span class="at">levels =</span> tree<span class="sc">$</span>tip.label))</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">sort</span>(tree<span class="sc">$</span>tip.label), <span class="fu">sort</span>(original_states<span class="sc">$</span>species))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>range_matrix <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/colias_geo_mtx.csv"</span>), <span class="at">row.names =</span> <span class="dv">1</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>area_codes <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(range_matrix))</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(area_codes) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(range_matrix)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>area_codes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>range_matrix <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/data/colias_geo_mtx.csv"</span>), <span class="at">row.names =</span> <span class="dv">1</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>area_codes <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(range_matrix))</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(area_codes) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(range_matrix)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>area_codes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>SEA EPa WPa NAr PTH Afr NTr 
@@ -191,19 +400,19 @@ Geodetic CRS:  WGS 84</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>state_labels <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run1/state_labels.txt"</span>), </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">colClasses =</span> <span class="fu">c</span>(<span class="st">"numeric"</span>,<span class="st">"character"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_position</span>(range, <span class="at">widths =</span> area_codes) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>, <span class="at">names_to =</span> <span class="st">"area"</span>, <span class="at">values_to =</span> <span class="st">"present"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(present <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>present) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">reframe</span>(<span class="at">combination =</span> <span class="fu">str_c</span>(area, <span class="at">collapse =</span> <span class="st">"+"</span>))</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>labels_all <span class="ot">&lt;-</span> <span class="fu">pull</span>(state_labels, combination) <span class="sc">%&gt;%</span> <span class="fu">as.character</span>()</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(labels_all) <span class="ot">&lt;-</span> state_labels<span class="sc">$</span>state</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">processAncStates</span>(tree_file, <span class="at">state_labels =</span> labels_all)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>state_labels <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"</span>), </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">colClasses =</span> <span class="fu">c</span>(<span class="st">"numeric"</span>,<span class="st">"character"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_position</span>(range, <span class="at">widths =</span> area_codes) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>, <span class="at">names_to =</span> <span class="st">"area"</span>, <span class="at">values_to =</span> <span class="st">"present"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(present <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>present) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">reframe</span>(<span class="at">combination =</span> <span class="fu">str_c</span>(area, <span class="at">collapse =</span> <span class="st">"+"</span>))</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>labels_all <span class="ot">&lt;-</span> <span class="fu">pull</span>(state_labels, combination) <span class="sc">%&gt;%</span> <span class="fu">as.character</span>()</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(labels_all) <span class="ot">&lt;-</span> state_labels<span class="sc">$</span>state</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">processAncStates</span>(tree_file, <span class="at">state_labels =</span> labels_all)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -217,151 +426,27 @@ Geodetic CRS:  WGS 84</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>states_plot <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(states<span class="sc">@</span>data<span class="sc">$</span>end_state_1))</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>palette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#EF9FBA"</span>,<span class="st">"#00A2FF"</span>,<span class="st">"#AA74A1"</span>,<span class="st">"#7CB580"</span>,<span class="st">"#347FD5"</span>,<span class="st">"#6E4672"</span>,<span class="st">"#9A6F4F"</span>,<span class="st">"#C9722C"</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>             <span class="st">"#009F52"</span>,<span class="st">"#DA3541"</span>,<span class="st">"#FF8C01"</span>,<span class="st">"#F8C700"</span>,<span class="st">"#00D164"</span>,<span class="st">"#013459"</span>,<span class="st">"#C38CA8"</span>,<span class="st">"#097C65"</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(palette) <span class="ot">&lt;-</span> states_plot</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plotAncStatesMAP</span>(<span class="at">t=</span>states,</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tree_layout=</span><span class="st">"rectangular"</span>,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tip_labels_offset =</span> <span class="fl">0.1</span>,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_color_as=</span><span class="st">"state"</span>,</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_color=</span>palette,</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">state_transparency =</span> <span class="fl">0.85</span>,</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_size_as=</span><span class="st">"state_posterior"</span>,</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">timeline =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">geo_units =</span> <span class="st">"epochs"</span>) <span class="sc">+</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>,</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">legend.title=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>states_plot <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(states<span class="sc">@</span>data<span class="sc">$</span>end_state_1))</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>palette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#EF9FBA"</span>,<span class="st">"#00A2FF"</span>,<span class="st">"#AA74A1"</span>,<span class="st">"#7CB580"</span>,<span class="st">"#347FD5"</span>,<span class="st">"#6E4672"</span>,<span class="st">"#9A6F4F"</span>,<span class="st">"#C9722C"</span>,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>             <span class="st">"#009F52"</span>,<span class="st">"#DA3541"</span>,<span class="st">"#FF8C01"</span>,<span class="st">"#F8C700"</span>,<span class="st">"#00D164"</span>,<span class="st">"#013459"</span>,<span class="st">"#C38CA8"</span>,<span class="st">"#097C65"</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(palette) <span class="ot">&lt;-</span> states_plot</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plotAncStatesMAP</span>(<span class="at">t=</span>states,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">cladogenetic =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tree_layout=</span><span class="st">"rectangular"</span>,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tip_labels_offset =</span> <span class="fl">0.1</span>,</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tip_labels_size =</span> <span class="dv">3</span>,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_color_as=</span><span class="st">"state"</span>,</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_color=</span>palette,</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">state_transparency =</span> <span class="fl">0.85</span>,</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_size =</span> <span class="fu">c</span>(<span class="fl">0.7</span>,<span class="fl">2.5</span>),</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tip_states_size =</span> <span class="dv">2</span>,</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">node_size_as=</span><span class="st">"state_posterior"</span>,</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">timeline =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">geo =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="960"></p>
-</div>
-</div>
-<section id="parameter-estimates" class="level2">
-<h2 class="anchored" data-anchor-id="parameter-estimates">Parameter estimates</h2>
-<p>Because there is one categorical and one quantitative parameter for each feature (e.g.&nbsp;area, distance, and altitude), we will look at the joint probability for each pair of parameters that correspond to the effect of the same feature over the same process (e.g.&nbsp;dispersal, extinction, between-region speciation and within-region speciation).</p>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read logs from MCMC</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>trace <span class="ot">&lt;-</span> <span class="fu">readTrace</span>(<span class="at">path=</span>log_file)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2d density</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>proc_groups <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"_b"</span>, <span class="st">"_d"</span>, <span class="st">"_e"</span>, <span class="st">"_w"</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>phis <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="fu">paste0</span>(<span class="st">"phi"</span>,proc_groups), <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">1</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply</span>(<span class="dv">1</span>, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x,<span class="st">"["</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"]"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>()</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>sigmas <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="at">data =</span> <span class="fu">paste0</span>(<span class="st">"sigma"</span>,proc_groups), <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">1</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">apply</span>(<span class="dv">1</span>, <span class="at">FUN =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(x,<span class="st">"["</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"]"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.vector</span>()</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>plot_2d <span class="ot">&lt;-</span> <span class="cf">function</span>(trace, <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>){</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(trace[[<span class="dv">1</span>]], <span class="fu">aes</span>(<span class="at">x =</span> .data[[x]], <span class="at">y =</span> .data[[y]])) <span class="sc">+</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">21</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>()</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  p</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>list_2d <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(sigmas)){</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  list_2d[[i]] <span class="ot">&lt;-</span> <span class="fu">plot_2d</span>(trace, <span class="at">x =</span> phis[i], <span class="at">y =</span> sigmas[i])</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="fu">wrap_plots</span>(list_2d, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output-display">
-<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate joint pp</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>trace_d <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_d[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_d[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_d[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_d[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>trace_e <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_e[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_e[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_e[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_e[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>trace_b <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_b[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_b[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_b[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_b[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>trace_w <span class="ot">&lt;-</span> trace[[<span class="dv">1</span>]] <span class="sc">%&gt;%</span> </span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Iteration, <span class="st">`</span><span class="at">phi_w[1]</span><span class="st">`</span>, <span class="st">`</span><span class="at">sigma_w[1]</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">joint_p =</span> <span class="fu">case_when</span>(<span class="st">`</span><span class="at">phi_w[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> <span class="st">`</span><span class="at">sigma_w[1]</span><span class="st">`</span> <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"both_positive"</span>,</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"one_or_both_negative"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Effect of distance between areas on dispersal</p>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>trace_d <span class="sc">%&gt;%</span> </span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  joint_p                   n
-  &lt;chr&gt;                 &lt;dbl&gt;
-1 both_positive        0.0111
-2 one_or_both_negative 0.989 </code></pre>
-</div>
-</div>
-<p>Effect of area size on extinction</p>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>trace_e <span class="sc">%&gt;%</span> </span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  joint_p                   n
-  &lt;chr&gt;                 &lt;dbl&gt;
-1 both_positive        0.0533
-2 one_or_both_negative 0.947 </code></pre>
-</div>
-</div>
-<p>Effect of distance on between-region speciation</p>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>trace_b <span class="sc">%&gt;%</span> </span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  joint_p                  n
-  &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive         0.08
-2 one_or_both_negative  0.92</code></pre>
-</div>
-</div>
-<p>Effect of area size on within-region speciation</p>
-<div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>trace_w <span class="sc">%&gt;%</span> </span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(joint_p) <span class="sc">%&gt;%</span> </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()<span class="sc">/</span><span class="fu">nrow</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  joint_p                  n
-  &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.204
-2 one_or_both_negative 0.796</code></pre>
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="816"></p>
 </div>
 </div>
 </section>
