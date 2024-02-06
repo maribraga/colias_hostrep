@@ -209,9 +209,10 @@ for(i in 2:length(posterior_trees)){
 ltt95_CI <- ltt95(posterior_trees_mp, log = T, las = 1) 
 lines(ltt_colias_df$times, ltt_colias_df$ltt, type = "s", col = "red") 
 mtext(text = "Colias", side = 3, line = 1)
+legend("topleft", legend = c("95% of the distribution of simulated trees around the median", "Median of simulated trees", "Empirical data"), lty = c(3,1,1), lwd = c(1,2,1), col = c("black","black","red"), bty = "n", cex = 0.8)
+
 
 ltt95_CI_df <- as.data.frame(ltt95_CI[,c("time", "low(lineages)", "high(lineages)")])
-
 ltt95_CI_df$time <- round(ltt95_CI_df$time, 4)
 
 points_in_colias <- c() 
@@ -224,8 +225,6 @@ for(i in 1:nrow(ltt_colias_df)){
   points_in_colias[i] <- ifelse(ltt_min <= ltt_colias_df$ltt[i] & 
                                    ltt_colias_df$ltt[i] <= ltt_max, T, F)
 } 
-
-legend("topleft", legend = c("95% of the distribution of simulated trees around the median", "Median of simulated trees", "Empirical data"), lty = c(3,1,1), lwd = c(1,2,1), col = c("black","black","red"), bty = "n", cex = 0.8)
 
 sum(points_in_colias)/length(points_in_colias)
 ```
