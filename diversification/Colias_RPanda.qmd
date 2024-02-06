@@ -1,7 +1,8 @@
 ---
 title: "Colias diversification with RPanda"
 author: "Mariana P Braga"
-date: Sys.Date()
+date: last-modified
+date-format: long
 format: 
   html:
     code-fold: show
@@ -27,18 +28,14 @@ Packages
 # load packages
 library(ape)
 library(RPANDA)
-library(RColorBrewer)
 library(here)
 library(dplyr)
-
-# library(phytools)
-# library(phangorn)
-# library(parallel)
-# library(ParallelLogger)
-# library(RColorBrewer)
-# library(devtools)
-# library(pspline)
-
+library(tidyr)
+library(ggplot2)
+library(cowplot)
+library(coda)
+library(treebalance)
+library(phytools)
 ```
 
 Load the data
@@ -46,37 +43,22 @@ Load the data
 ```{r}
 
 tree <- read.tree(here("data_prepare/data/processed/Colias_full_tree_clean.tre"))
-groups <- readRDS("~/repos/colias_hostrep/diversification/ignore/groups.rds")
-eastwest <- select(groups, -north_south)
+groups <- read.csv(here("data_prepare/data/processed/groups.csv"))
 ```
 
 Shift combinations
 
 ```{r}
-#| fig-height: 10
-#| fig-width: 7
-
-sfrac <- get.sampling.fractions(tree, groups, plot = TRUE, cex = 0.5)
-node_comb <- get.comb.shift(tree, groups, sfrac)
-
-par(mfrow=c(1,2))
-for(i in 1:length(node_comb)){
-  plot.phylo.comb(phylo = tree, 
-                data = groups, 
-                sampling.fractions = sfrac, 
-                combi = node_comb[i], 
-                edge.width = 2, 
-                label.offset = 0.3, 
-                lad = F, 
-                cex = 0.4)
-  axisPhylo()
-}
-dev.off()
+sfrac <- get.sampling.fractions(tree, groups, plot = TRUE, cex = 0.5, clade.size = 5)
+node_comb <- get.comb.shift(tree, groups, sfrac, clade.size = 5)
 ```
 
 Find best combination of models
 
 ```{r}
+#| fig-height: 10
+#| fig-width: 7
+#| 
 shifts <- shift.estimates(phylo = tree,
                           data = groups,
                           sampling.fractions = sfrac,
@@ -88,71 +70,88 @@ shifts <- shift.estimates(phylo = tree,
                           multi.backbone = "all",
                           Ncores = 4)
 
-str(shifts, max.level = 1)
+#str(shifts, max.level = 1)
 head(shifts$total)
-shifts$backbones$`75/`
-shifts$subclades$'75'
+
+par(mfrow=c(2,3))
+for(i in 1:6){
+  plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, 
+                combi = i, label.offset = 0.1, cex = 0.7, lad = F) 
+}
+
+shifts$backbones$`75/`[[1]][1:3,]
+shifts$subclades$'75'[1:3,]
+shifts$subclades$'117'[1:3,]
+
 ```
 
 Rates and diversity across time
 
 ```{r}
+crown_age <- max(node.depth.edgelength(tree))
+time <- -c(crown_age, seq(floor(crown_age), 0, by = -0.1))
+
 rates <- div.rates(phylo = tree,
                    shift.res = shifts,
-                   time.interval = 0.5,
+                   time.interval = 0.1,
                    combi = 1, 
                    part = "all")
-rates
+
 
 paleodiversity <- paleodiv(phylo = tree,
                            data = groups,
                            sampling.fractions = sfrac,
-                           time.interval = 0.5,
+                           time.interval = 0.1,
                            shift.res = shifts,
-                           split.div = TRUE)
-paleodiversity
+                           split.div = TRUE,
+                           combi = 1)
+
+df_paleo <- as.data.frame(paleodiversity) %>% 
+  t() %>% 
+  as_tibble() %>% 
+  mutate(time = time, .before = 1) %>% 
+  rename(Northern_hemisphere = '75', Neotropics = 'backbone') %>% 
+  pivot_longer(2:3, names_to = "clade", values_to = "richness") %>% 
+  mutate(Clade = factor(clade, levels = c("Northern_hemisphere", "Neotropics")))
 ```
 
 Plot shifts, diversification rates and paleodiversity over time
 
 ```{r}
 #| label: "big plot"
-#| fig-height: 9
+#| fig-height: 10
 #| fig-width: 10
 
-# Define the layout of plot with the matrix mat 
-mat <- matrix(c(1,1,2,3), nrow = 2, ncol = 2)
-
-layout(mat) 
-par(mar = c(6,4,3,4)) 
-
-subclade_colors <- brewer.pal(8, "Dark2")[1:4] 
-group_colors <- c(subclade_colors, "black")
+group_colors <- c("#6E4672", "#FF8C01")
 
 # Phylogeny with shifts 
-
-plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 1, label.offset = 0.1, cex = 0.7, lad = F) 
+plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 1, label.offset = 0.1, cex = 0.7, lad = F,
+                col.sub = group_colors[1], col.bck = group_colors[2], edge.width = 2) 
 axisPhylo() 
-mtext("Time (Ma)", side = 1, line = 2, cex = 1, at = 17)
+mtext("Time (Ma)", side = 1, line = 2, cex = 1, at = 1.75)
+p1 <- recordPlot()
 
 # Rates through time 
-
-crown_age <- max(node.depth.edgelength(tree))
-time <- -c(crown_age, seq(floor(crown_age), 0, by = -0.5))
-
-plot(time, rates[[1]][1,], type = "l", col = group_colors[1], las = 1, xlab = "Time (Myrs)", ylab = "Rates (Events/ Lineages / Myr)", main = "Diversification rates")
-lines(time, rates[[length(rates)]][1,], type = "l", col = "black") 
-legend("topright", legend = c("Backbone", "After shift"), col = c("black", group_colors[1]), lty = 1)
+plot(time, rates[[2]][1,], type = "l", ylim = c(0, 5.5), col = group_colors[2], las = 1, xlab = "Time (Myrs)", 
+     ylab = "Rates (Events/ Lineages / Myr)", main = "Diversification rates per clade")
+lines(time, rates[[1]][1,], col = group_colors[1]) 
+p2 <- recordPlot()
 
 # Paleodiversity dynamics 
-plot(time, paleodiversity["75",],
-     las = 1, ylim = c(0, 80),
-     col = group_colors[1],
-     main = "Paleodiversity dynamics of Colias",
-     xlab = "Time (Myrs)", ylab = "Number of species", type = "l") 
-lines(time, paleodiversity["backbone",], col = "black")
-legend("topleft", legend = c("Backbone", "After shift"), col = c("black", group_colors[1]), lty = 1)
+paleo_plot <- ggplot(df_paleo, aes(time, richness, fill = Clade, col = Clade)) + 
+  geom_area(alpha = 0.5) +
+  scale_fill_manual(values = group_colors) +
+  scale_color_manual(values = group_colors) +
+  labs(y = "Number of species", x = "Time (Ma)") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+p3 <- plot_grid(p2, paleo_plot, nrow = 2)
+p4 <- plot_grid(p1, p3, ncol = 2)
+p4
+
 ```
+
 
 ## Model adequacy
 
@@ -161,15 +160,14 @@ To test whether the selected model is adequate, we can simulate data with that m
 ```{r}
 #| label: "adequacy"
 
-posterior_trees <- simul.comb.shift(phylo = tree, sampling.fractions = sfrac, shift.res = shifts)
+posterior_trees <- simul.comb.shift(phylo = tree, sampling.fractions = sfrac, shift.res = shifts, 
+                                           clade.size = 5, combi = 1, n = 10000)
 
 # Number of tips per group
-
 ntip_by_groups <- lapply(posterior_trees, function(x)     
   table(sapply(strsplit(x$tip.label, split = ""), "[[", 1))) 
 ntip_by_groups_df <- as.data.frame(do.call(rbind, ntip_by_groups)) 
 ntip_by_groups_colias <- c(73,7)
-
 
 par(mfrow = c(1,2), cex = 0.6) 
 boxplot(ntip_by_groups_df, las = 1, main = "Species richness by group", ylab = "Number of species", xlab = "Groups") 
@@ -179,7 +177,6 @@ legend("toprigh", bty = "n", legend = "Empirical values", pch = 19, col = "red",
 median(ntip_by_groups_df$a)
 median(ntip_by_groups_df$z)
 
-library(coda)
 divA <- as.mcmc(ntip_by_groups_df$a)
 divZ <- as.mcmc(ntip_by_groups_df$z)
 
@@ -188,7 +185,6 @@ HPDinterval(divZ)
 
 # Tree imbalance
 
-library(treebalance)
 
 avgLeafDepI <- avgLeafDepI(tree) 
 avgLeafDepI_posteriors <- sapply(posterior_trees, avgLeafDepI) 
@@ -201,9 +197,6 @@ dev.off()
 
 ```{r}
 # LTT 
-
-library(phytools)
-
 ltt_colias <- ltt(tree, plot = F) 
 ltt_colias_df <- data.frame(times = round(ltt_colias$times, 4), ltt = ltt_colias$ltt)
 
@@ -236,3 +229,5 @@ legend("topleft", legend = c("95% of the distribution of simulated trees around 
 
 sum(points_in_colias)/length(points_in_colias)
 ```
+
+
