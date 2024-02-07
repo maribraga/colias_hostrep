@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Mariana P Braga">
-<meta name="dcterms.date" content="2024-02-06">
+<meta name="dcterms.date" content="2024-02-07">
 
 <title>Colias diversification with RPanda</title>
 <style>
@@ -98,7 +98,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 6, 2024</p>
+      <p class="date">February 7, 2024</p>
     </div>
   </div>
   
@@ -786,7 +786,7 @@ Shifts grafting...
 <span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(ntip_by_groups_df<span class="sc">$</span>a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 82</code></pre>
+<pre><code>[1] 81</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -804,9 +804,9 @@ Shifts grafting...
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     lower upper
-var1     6   230
+var1     6   234
 attr(,"Probability")
-[1] 0.9501027</code></pre>
+[1] 0.9499855</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -814,9 +814,9 @@ attr(,"Probability")
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     lower upper
-var1     5    37
+var1     5    35
 attr(,"Probability")
-[1] 0.9501027</code></pre>
+[1] 0.9499855</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -858,33 +858,103 @@ attr(,"Probability")
 <span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>ltt95_CI <span class="ot">&lt;-</span> <span class="fu">ltt95</span>(posterior_trees_mp, <span class="at">log =</span> T, <span class="at">las =</span> <span class="dv">1</span>) </span>
 <span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ltt_colias_df<span class="sc">$</span>times, ltt_colias_df<span class="sc">$</span>ltt, <span class="at">type =</span> <span class="st">"s"</span>, <span class="at">col =</span> <span class="st">"red"</span>) </span>
 <span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="at">text =</span> <span class="st">"Colias"</span>, <span class="at">side =</span> <span class="dv">3</span>, <span class="at">line =</span> <span class="dv">1</span>)</span>
-<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>ltt95_CI_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(ltt95_CI[,<span class="fu">c</span>(<span class="st">"time"</span>, <span class="st">"low(lineages)"</span>, <span class="st">"high(lineages)"</span>)])</span>
-<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>ltt95_CI_df<span class="sc">$</span>time <span class="ot">&lt;-</span> <span class="fu">round</span>(ltt95_CI_df<span class="sc">$</span>time, <span class="dv">4</span>)</span>
-<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>points_in_colias <span class="ot">&lt;-</span> <span class="fu">c</span>() </span>
-<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(ltt_colias_df)){</span>
-<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>  int_max <span class="ot">&lt;-</span> <span class="fu">sort</span>(ltt95_CI_df<span class="sc">$</span>time[ ltt95_CI_df<span class="sc">$</span>time <span class="sc">&gt;=</span> ltt_colias_df<span class="sc">$</span>times[i]][<span class="dv">1</span>]) </span>
-<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>  int_min <span class="ot">&lt;-</span> <span class="fu">sort</span>(ltt95_CI_df<span class="sc">$</span>time[ltt95_CI_df<span class="sc">$</span>time <span class="sc">&lt;=</span> ltt_colias_df<span class="sc">$</span>times[i]],</span>
-<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>                  <span class="at">decreasing =</span> T)[<span class="dv">1</span>] </span>
-<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>  ltt_min <span class="ot">&lt;-</span> ltt95_CI_df<span class="sc">$</span><span class="st">`</span><span class="at">low(lineages)</span><span class="st">`</span>[ltt95_CI_df<span class="sc">$</span>time <span class="sc">==</span> int_min] </span>
-<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>  ltt_max <span class="ot">&lt;-</span> ltt95_CI_df<span class="sc">$</span><span class="st">`</span><span class="at">high(lineages)</span><span class="st">`</span>[ltt95_CI_df<span class="sc">$</span>time <span class="sc">==</span> int_max]</span>
-<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>  points_in_colias[i] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(ltt_min <span class="sc">&lt;=</span> ltt_colias_df<span class="sc">$</span>ltt[i] <span class="sc">&amp;</span> </span>
-<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>                                   ltt_colias_df<span class="sc">$</span>ltt[i] <span class="sc">&lt;=</span> ltt_max, T, F)</span>
-<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>} </span>
-<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topleft"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"95% of the distribution of simulated trees around the median"</span>, <span class="st">"Median of simulated trees"</span>, <span class="st">"Empirical data"</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">lwd =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>), <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"black"</span>,<span class="st">"black"</span>,<span class="st">"red"</span>), <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">cex =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topleft"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"95% of the distribution of simulated trees around the median"</span>, <span class="st">"Median of simulated trees"</span>, <span class="st">"Empirical data"</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">lwd =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">1</span>), <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"black"</span>,<span class="st">"black"</span>,<span class="st">"red"</span>), <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">cex =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="Colias_RPanda_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 <details open="">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(points_in_colias)<span class="sc">/</span><span class="fu">length</span>(points_in_colias)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>ltt95_CI_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(ltt95_CI[,<span class="fu">c</span>(<span class="st">"time"</span>, <span class="st">"low(lineages)"</span>, <span class="st">"high(lineages)"</span>)])</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>ltt95_CI_df<span class="sc">$</span>time <span class="ot">&lt;-</span> <span class="fu">round</span>(ltt95_CI_df<span class="sc">$</span>time, <span class="dv">4</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>points_in_colias <span class="ot">&lt;-</span> <span class="fu">c</span>() </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(ltt_colias_df)){</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  int_max <span class="ot">&lt;-</span> <span class="fu">sort</span>(ltt95_CI_df<span class="sc">$</span>time[ ltt95_CI_df<span class="sc">$</span>time <span class="sc">&gt;=</span> ltt_colias_df<span class="sc">$</span>times[i]][<span class="dv">1</span>]) </span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  int_min <span class="ot">&lt;-</span> <span class="fu">sort</span>(ltt95_CI_df<span class="sc">$</span>time[ltt95_CI_df<span class="sc">$</span>time <span class="sc">&lt;=</span> ltt_colias_df<span class="sc">$</span>times[i]],</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>                  <span class="at">decreasing =</span> T)[<span class="dv">1</span>] </span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  ltt_min <span class="ot">&lt;-</span> ltt95_CI_df<span class="sc">$</span><span class="st">`</span><span class="at">low(lineages)</span><span class="st">`</span>[ltt95_CI_df<span class="sc">$</span>time <span class="sc">==</span> int_min] </span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  ltt_max <span class="ot">&lt;-</span> ltt95_CI_df<span class="sc">$</span><span class="st">`</span><span class="at">high(lineages)</span><span class="st">`</span>[ltt95_CI_df<span class="sc">$</span>time <span class="sc">==</span> int_max]</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  points_in_colias[i] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(ltt_min <span class="sc">&lt;=</span> ltt_colias_df<span class="sc">$</span>ltt[i] <span class="sc">&amp;</span> </span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>                                   ltt_colias_df<span class="sc">$</span>ltt[i] <span class="sc">&lt;=</span> ltt_max, T, F)</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>} </span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(points_in_colias)<span class="sc">/</span><span class="fu">length</span>(points_in_colias)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.9852941</code></pre>
+</div>
+</div>
+<p>All figures for second best model</p>
+<div class="cell">
+<details open="">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>rates2 <span class="ot">&lt;-</span> <span class="fu">div.rates</span>(<span class="at">phylo =</span> tree,</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">shift.res =</span> shifts,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">time.interval =</span> <span class="fl">0.1</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">combi =</span> <span class="dv">2</span>, </span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">part =</span> <span class="st">"all"</span>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>paleodiversity2 <span class="ot">&lt;-</span> <span class="fu">paleodiv</span>(<span class="at">phylo =</span> tree,</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>                           <span class="at">data =</span> groups,</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>                           <span class="at">sampling.fractions =</span> sfrac,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>                           <span class="at">time.interval =</span> <span class="fl">0.1</span>,</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>                           <span class="at">shift.res =</span> shifts,</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>                           <span class="at">split.div =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>                           <span class="at">combi =</span> <span class="dv">2</span>)</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>df_paleo2 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(paleodiversity2) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time =</span> time, <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Nearctic_expansion =</span> <span class="st">'117'</span>, <span class="at">Northern_hemisphere =</span> <span class="st">'Backbone of 75'</span>, <span class="at">Neotropics =</span> <span class="st">'Deep backbone'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">names_to =</span> <span class="st">"clade"</span>, <span class="at">values_to =</span> <span class="st">"richness"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Clade =</span> <span class="fu">factor</span>(clade, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Nearctic_expansion"</span>, <span class="st">"Northern_hemisphere"</span>, <span class="st">"Neotropics"</span>)))</span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a>group_colors2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#DA3541"</span>, <span class="st">"#6E4672"</span>, <span class="st">"#FF8C01"</span>)</span>
+<span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Phylogeny with shifts </span></span>
+<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.phylo.comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, <span class="at">combi =</span> <span class="dv">2</span>, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F,</span>
+<span id="cb37-28"><a href="#cb37-28" aria-hidden="true" tabindex="-1"></a>                <span class="at">col.sub =</span> group_colors2[<span class="dv">1</span>], <span class="at">col.bck =</span> group_colors2[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>], <span class="at">edge.width =</span> <span class="dv">2</span>) </span>
+<span id="cb37-29"><a href="#cb37-29" aria-hidden="true" tabindex="-1"></a><span class="fu">axisPhylo</span>() </span>
+<span id="cb37-30"><a href="#cb37-30" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="st">"Time (Ma)"</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>, <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fl">1.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Colias_RPanda_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+<details open="">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>p12 <span class="ot">&lt;-</span> <span class="fu">recordPlot</span>()</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Rates through time </span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(time, rates2[[<span class="dv">3</span>]][<span class="dv">1</span>,], <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">5.5</span>), <span class="at">col =</span> group_colors2[<span class="dv">3</span>], <span class="at">las =</span> <span class="dv">1</span>, <span class="at">xlab =</span> <span class="st">"Time (Myrs)"</span>, </span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Rates (Events/ Lineages / Myr)"</span>, <span class="at">main =</span> <span class="st">"Diversification rates per clade"</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(time, rates2[[<span class="dv">2</span>]][<span class="dv">1</span>,], <span class="at">col =</span> group_colors2[<span class="dv">2</span>]) </span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(time, rates2[[<span class="dv">1</span>]][<span class="dv">1</span>,], <span class="at">col =</span> group_colors2[<span class="dv">1</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Colias_RPanda_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid" width="672"></p>
+</div>
+<details open="">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>p22 <span class="ot">&lt;-</span> <span class="fu">recordPlot</span>()</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Paleodiversity dynamics </span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>paleo_plot2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df_paleo2, <span class="fu">aes</span>(time, richness, <span class="at">fill =</span> Clade, <span class="at">col =</span> Clade)) <span class="sc">+</span> </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_area</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> group_colors2) <span class="sc">+</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> group_colors2) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Number of species"</span>, <span class="at">x =</span> <span class="st">"Time (Ma)"</span>) <span class="sc">+</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>p32 <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(p22, paleo_plot2, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>p42 <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(p12, p32, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>p42</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Colias_RPanda_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
