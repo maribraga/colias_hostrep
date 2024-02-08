@@ -165,13 +165,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
           Point est. Upper C.I.
 iteration        NaN        NaN
-clock           1.01       1.03
-gain            1.01       1.03
-loss            1.01       1.03
+clock           1.01       1.06
+gain            1.01       1.04
+loss            1.01       1.04
 
 Multivariate psrf
 
-1</code></pre>
+1.01</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -182,9 +182,9 @@ Multivariate psrf
 
           Point est. Upper C.I.
 iteration        NaN        NaN
-clock           1.00       1.01
-gain            1.02       1.07
-loss            1.02       1.07
+clock          0.998      0.998
+gain           1.021      1.086
+loss           1.021      1.086
 
 Multivariate psrf
 
@@ -213,7 +213,7 @@ Multivariate psrf
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   clock     gain     loss 
-241.7925 212.2858 212.2860 </code></pre>
+364.9069 252.4496 252.4495 </code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -243,7 +243,7 @@ Multivariate psrf
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   clock     gain     loss 
-676.9705 434.6249 434.6248 </code></pre>
+804.9391 432.1008 432.1008 </code></pre>
 </div>
 </div>
 </section>
@@ -278,8 +278,8 @@ Multivariate psrf
 <pre><code># A tibble: 3 × 4
   parameter   mean HPD.95.low HPD.95.high
   &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
-1 clock     0.476      0.395       0.559 
-2 gain      0.0563     0.0450      0.0698
+1 clock     0.475      0.394       0.556 
+2 gain      0.0564     0.0449      0.0699
 3 loss      0.944      0.930       0.955 </code></pre>
 </div>
 </div>
@@ -372,7 +372,7 @@ Multivariate psrf
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      mean HPD95.lower HPD95.upper
-1 344.0728         294         398</code></pre>
+1 343.9365         296         398</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -380,8 +380,8 @@ Multivariate psrf
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>gl<span class="sc">/</span><span class="fu">sum</span>(gl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>    gains    losses 
-0.4260703 0.5739297 </code></pre>
+<pre><code>   gains   losses 
+0.426412 0.573588 </code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -389,7 +389,7 @@ Multivariate psrf
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>gain_rate loss_rate 
- 1.521198  2.049100 </code></pre>
+ 1.521815  2.047069 </code></pre>
 </div>
 </div>
 </section>
@@ -435,42 +435,42 @@ Multivariate psrf
 <pre><code># A tibble: 36 × 3
    node      host          pp
    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt;
- 1 Index_109 Astragalus 0.985
+ 1 Index_109 Astragalus 0.987
  2 Index_109 Trifolium  1    
  3 Index_108 Astragalus 1    
- 4 Index_108 Oxytropis  0.967
+ 4 Index_108 Oxytropis  0.966
  5 Index_108 Trifolium  0.998
  6 Index_107 Astragalus 1    
- 7 Index_107 Oxytropis  0.973
+ 7 Index_107 Oxytropis  0.971
  8 Index_107 Trifolium  0.999
  9 Index_106 Astragalus 1    
-10 Index_106 Oxytropis  0.975
+10 Index_106 Oxytropis  0.973
 11 Index_106 Trifolium  1    
 12 Index_105 Astragalus 1    
-13 Index_105 Oxytropis  0.999
+13 Index_105 Oxytropis  0.998
 14 Index_105 Trifolium  1    
-15 Index_101 Vaccinium  0.944
+15 Index_101 Vaccinium  0.936
 16 Index_101 Astragalus 1    
-17 Index_101 Lupinus    0.985
+17 Index_101 Lupinus    0.988
 18 Index_101 Oxytropis  0.999
-19 Index_101 Trifolium  0.987
-20 Index_101 Hedysarum  0.993
+19 Index_101 Trifolium  0.988
+20 Index_101 Hedysarum  0.992
 21 Index_85  Astragalus 1    
-22 Index_85  Trifolium  0.991
+22 Index_85  Trifolium  0.993
 23 Index_83  Astragalus 0.999
 24 Index_83  Vicia      0.919
 25 Index_83  Trifolium  0.991
-26 Index_83  Lotus      0.919
-27 Index_75  Astragalus 0.996
+26 Index_83  Lotus      0.920
+27 Index_75  Astragalus 0.997
 28 Index_75  Oxytropis  0.951
-29 Index_75  Trifolium  0.945
+29 Index_75  Trifolium  0.947
 30 Index_66  Astragalus 0.999
-31 Index_66  Oxytropis  0.962
-32 Index_61  Astragalus 0.952
+31 Index_66  Oxytropis  0.961
+32 Index_61  Astragalus 0.953
 33 Index_61  Trifolium  0.999
-34 Index_60  Astragalus 0.975
+34 Index_60  Astragalus 0.977
 35 Index_60  Medicago   0.997
-36 Index_60  Trifolium  0.999</code></pre>
+36 Index_60  Trifolium  0.998</code></pre>
 </div>
 </div>
 </section>
@@ -672,6 +672,54 @@ $`1`
 </div>
 </div>
 <p><strong>RESULT from module validation</strong>: 3 Ma, there was only one module; 2 Ma, M4 is robust, but M1.1 and M1.2 could still be together; some modules at 1 Ma are robust and others are weaker.</p>
+<p><strong>Present-day network structure</strong></p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>net <span class="ot">&lt;-</span> <span class="fu">replace</span>(matrix, <span class="fu">which</span>(matrix[,] <span class="sc">==</span> <span class="dv">2</span>), <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>qz <span class="ot">&lt;-</span> <span class="fu">index_at_ages_summary</span>(<span class="fu">list</span>(<span class="st">"0"</span> <span class="ot">=</span> net), <span class="at">index =</span> <span class="st">"Q"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>nz <span class="ot">&lt;-</span> <span class="fu">index_at_ages_summary</span>(<span class="fu">list</span>(<span class="st">"0"</span> <span class="ot">=</span> net), <span class="at">index =</span> <span class="st">"NODF"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Modularity</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>qz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Q_obs      mean         sd        z age
+1 0.4228172 0.4423357 0.01030086 -1.89484   0</code></pre>
+</div>
+</div>
+<p>Nestedness</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>nz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>     N_obs     mean        sd        z age
+1 33.22027 8.538396 0.5012654 49.23914   0</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">visweb</span>(net, <span class="at">type =</span> <span class="st">"nested"</span>, <span class="at">prednames =</span> F, <span class="at">preynames =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_host_rep_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 </section>
 

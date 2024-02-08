@@ -447,5 +447,40 @@ mod_val$mean_support
 **RESULT from module validation**: 3 Ma, there was only one module; 2 Ma, M4 is robust, but M1.1 and M1.2 could still be together; some modules at 1 Ma are robust and others are weaker.
 
 
+**Present-day network structure** 
 
+```{r}
+net <- replace(matrix, which(matrix[,] == 2), 1)
+```
+
+```{r}
+#| eval: false
+qz <- index_at_ages_summary(list("0" = net), index = "Q")
+```
+
+```{r}
+#| eval: false
+#| echo: false
+saveRDS(qz, paste0(path_evol, "qz_observed.rds"))
+```
+
+```{r}
+#| echo: false
+qz <- readRDS(paste0(path_evol, "qz_observed.rds"))
+```
+
+```{r}
+nz <- index_at_ages_summary(list("0" = net), index = "NODF")
+```
+
+Modularity
+```{r}
+qz
+```
+
+Nestedness
+```{r}
+nz
+visweb(net, type = "nested", prednames = F, preynames = F)
+```
 
