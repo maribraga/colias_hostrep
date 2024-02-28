@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Mariana P Braga">
-<meta name="dcterms.date" content="2024-02-07">
+<meta name="dcterms.date" content="2024-02-28">
 
 <title>Colias diversification with RPanda</title>
 <style>
@@ -98,7 +98,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 7, 2024</p>
+      <p class="date">February 28, 2024</p>
     </div>
   </div>
   
@@ -114,20 +114,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install branch from RPanda repo</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#install_github("hmorlon/PANDA", ref = "clade.shift.model")</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ape)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RPANDA)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(coda)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(treebalance)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(phytools)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ape)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RPANDA)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(coda)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(treebalance)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(phytools)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Load the data</p>
@@ -190,12 +187,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">data =</span> groups,</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">sampling.fractions =</span> sfrac,</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">comb.shift =</span> node_comb,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">models =</span> <span class="fu">c</span>(<span class="st">"BCST"</span>,<span class="st">"BVAR"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">"BCST_DCST"</span>,<span class="st">"BVAR_DVAR"</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">"BVAR_DCST"</span>,<span class="st">"BCST_DVAR"</span>),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">backbone.option =</span> <span class="st">"crown.shift"</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                          <span class="at">multi.backbone =</span> <span class="st">"all"</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                          <span class="at">Ncores =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">models =</span> <span class="fu">c</span>(<span class="st">"BCST"</span>, <span class="st">"BCST_DCST"</span>, <span class="st">"BVAR"</span>, <span class="st">"BVAR_DCST"</span>, <span class="st">"BCST_DVAR"</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">backbone.option =</span> <span class="st">"crown.shift"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">multi.backbone =</span> <span class="st">"all"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">Ncores =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -208,9 +203,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     BCST         AICc = 206.8103 
     BCST_DCST        AICc = 208.9362 
     BVAR         AICc = 160.7045 
-    BVAR_DCST        AICc = 162.8979 
+    BVAR_DCST        AICc = 162.898 
     BCST_DVAR        AICc = 211.1297 
-    BVAR_DVAR        AICc = 172.4146 
 
 --- SUBCLADES ---
  
@@ -221,15 +215,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     BVAR         AICc = 17.92598 
     BVAR_DCST        AICc = 24.92598 
     BCST_DVAR        AICc = 30.66666 
-    BVAR_DVAR        AICc = 40.21462 
 2 / 3
  Sampling fraction for NAr_expansion = 18/20 (90 %) 
     BCST         AICc = 52.13571 
     BCST_DCST        AICc = 54.68571 
     BVAR         AICc = 34.16285 
     BVAR_DCST        AICc = 37.07714 
-    BCST_DVAR        AICc = 57.6 
-    BVAR_DVAR        AICc = 44.48862 
+    BCST_DVAR        AICc = 57.59999 
 3 / 3
  Sampling fraction for north = 60/73 (82.2 %) 
     BCST         AICc = 187.3651 
@@ -237,7 +229,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     BVAR         AICc = 129.9482 
     BVAR_DCST        AICc = 132.1662 
     BCST_DVAR        AICc = 191.7247 
-    BVAR_DVAR        AICc = 134.6783 
 
 --- BACKBONES ---
 
@@ -282,7 +273,7 @@ Diversification models are running:
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>){</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot.phylo.comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_phylo_comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, </span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">combi =</span> i, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F) </span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -308,28 +299,28 @@ Diversification models are running:
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>shifts<span class="sc">$</span>subclades<span class="sc">$</span><span class="st">'75'</span>[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>     Models Parameters      logL     AICc     Lambda    Alpha            Mu
-4      BVAR          3 -62.86883 132.1662 0.09984647 1.295425            NA
-5 BVAR_DCST          4 -62.86883 134.4649 0.10011210 1.295174  1.082390e-08
-6 BVAR_DVAR          5 -62.97551 137.0621 0.17287046 1.154949 -6.179551e-01
-        Beta delta_AICc
-4         NA   0.000000
-5         NA   2.298703
-6 -0.5686269   4.895895</code></pre>
+<pre><code>     Models Parameters      logL     AICc     Lambda    Alpha           Mu Beta
+4      BVAR          3 -62.86883 132.1662 0.09984647 1.295425           NA   NA
+5 BVAR_DCST          4 -62.86883 134.4649 0.09985717 1.295451 1.434269e-07   NA
+1      BCST          2 -92.64807 189.5067 0.60812500       NA           NA   NA
+  delta_AICc
+4   0.000000
+5   2.298702
+1  57.340425</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>shifts<span class="sc">$</span>subclades<span class="sc">$</span><span class="st">'117'</span>[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>     Models Parameters      logL     AICc     Lambda    Alpha            Mu
-4      BVAR          3 -14.68143 37.07714 0.08484600 1.736559            NA
-5 BVAR_DCST          4 -14.68143 40.43978 0.08487041 1.736451 -9.065241e-09
-6 BVAR_DVAR          5 -16.70585 48.41170 0.29325680 1.525528 -7.175062e-01
-       Beta delta_AICc
-4        NA   0.000000
-5        NA   3.362637
-6 0.7347898  11.334562</code></pre>
+<pre><code>     Models Parameters      logL     AICc     Lambda    Alpha           Mu Beta
+4      BVAR          3 -14.68143 37.07714 0.08484600 1.736559           NA   NA
+5 BVAR_DCST          4 -14.68143 40.43978 0.08486654 1.735964 2.508945e-07   NA
+1      BCST          2 -24.94285 54.68571 0.62296875       NA           NA   NA
+  delta_AICc
+4   0.000000
+5   3.362637
+1  17.608570</code></pre>
 </div>
 </div>
 <p>Rates and diversity across time</p>
@@ -370,7 +361,7 @@ Diversification models are running:
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>group_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#6E4672"</span>, <span class="st">"#FF8C01"</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Phylogeny with shifts </span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.phylo.comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, <span class="at">combi =</span> <span class="dv">1</span>, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_phylo_comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, <span class="at">combi =</span> <span class="dv">1</span>, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F,</span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">col.sub =</span> group_colors[<span class="dv">1</span>], <span class="at">col.bck =</span> group_colors[<span class="dv">2</span>], <span class="at">edge.width =</span> <span class="dv">2</span>) </span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">axisPhylo</span>() </span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="st">"Time (Ma)"</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>, <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fl">1.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -423,6 +414,7 @@ Diversification models are running:
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Backbone simulations...
+     backbone 1 / 1 
 Subclade simulations...
      subclade 1 / 1 
 Shifts grafting...
@@ -768,7 +760,8 @@ Shifts grafting...
   |                                                                            
   |======================================================================|  99%
   |                                                                            
-  |======================================================================| 100%</code></pre>
+  |======================================================================| 100%
+3351 trees successfully simulated. Increase the value of argument n to get more trees.</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -786,7 +779,7 @@ Shifts grafting...
 <span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(ntip_by_groups_df<span class="sc">$</span>a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 81</code></pre>
+<pre><code>[1] 79</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -804,9 +797,9 @@ Shifts grafting...
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     lower upper
-var1     6   234
+var1     6   222
 attr(,"Probability")
-[1] 0.9499855</code></pre>
+[1] 0.9498657</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -814,9 +807,9 @@ attr(,"Probability")
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     lower upper
-var1     5    35
+var1     5    34
 attr(,"Probability")
-[1] 0.9499855</code></pre>
+[1] 0.9498657</code></pre>
 </div>
 <details open="">
 <summary>Show the code</summary>
@@ -915,7 +908,7 @@ attr(,"Probability")
 <span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a>group_colors2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#DA3541"</span>, <span class="st">"#6E4672"</span>, <span class="st">"#FF8C01"</span>)</span>
 <span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Phylogeny with shifts </span></span>
-<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.phylo.comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, <span class="at">combi =</span> <span class="dv">2</span>, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F,</span>
+<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_phylo_comb</span>(<span class="at">phylo =</span> tree, <span class="at">data =</span> groups, <span class="at">sampling.fractions =</span> sfrac, <span class="at">shift.res =</span> shifts, <span class="at">combi =</span> <span class="dv">2</span>, <span class="at">label.offset =</span> <span class="fl">0.1</span>, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">lad =</span> F,</span>
 <span id="cb37-28"><a href="#cb37-28" aria-hidden="true" tabindex="-1"></a>                <span class="at">col.sub =</span> group_colors2[<span class="dv">1</span>], <span class="at">col.bck =</span> group_colors2[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>], <span class="at">edge.width =</span> <span class="dv">2</span>) </span>
 <span id="cb37-29"><a href="#cb37-29" aria-hidden="true" tabindex="-1"></a><span class="fu">axisPhylo</span>() </span>
 <span id="cb37-30"><a href="#cb37-30" aria-hidden="true" tabindex="-1"></a><span class="fu">mtext</span>(<span class="st">"Time (Ma)"</span>, <span class="at">side =</span> <span class="dv">1</span>, <span class="at">line =</span> <span class="dv">2</span>, <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">at =</span> <span class="fl">1.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

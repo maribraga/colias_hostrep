@@ -130,7 +130,8 @@ Let's move on to reconstruction of the history of evolution of host repertoire a
 This matrix contains 0s and 2s because in the host repertoire model in RevBayes, there are 3 possible states (0,1,2), where 1 means "potential host" and 2 means "actual host". We used the 2-state model for the reconstruction in RevBayes, so we are only interested in the 0s and 2s, no potential host.
 
 ```{r}
-matrix <- read.csv(paste0(path_data,"interaction_matrix_all_hosts.csv"), row.names = 1) %>% as.matrix()
+matrix <- read.csv(paste0(path_data,"interaction_matrix_all_hosts.csv"), row.names = 1) %>%
+  as.matrix()
 
 ```
 

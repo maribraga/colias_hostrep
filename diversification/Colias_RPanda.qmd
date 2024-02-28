@@ -22,9 +22,6 @@ Packages
 #| label: "packages"
 #| message: FALSE
 
-# install branch from RPanda repo
-#install_github("hmorlon/PANDA", ref = "clade.shift.model")
-
 # load packages
 library(ape)
 library(RPANDA)
@@ -58,14 +55,12 @@ Find best combination of models
 ```{r}
 #| fig-height: 10
 #| fig-width: 7
-#| 
+
 shifts <- shift.estimates(phylo = tree,
                           data = groups,
                           sampling.fractions = sfrac,
                           comb.shift = node_comb,
-                          models = c("BCST","BVAR",
-                                     "BCST_DCST","BVAR_DVAR",
-                                     "BVAR_DCST","BCST_DVAR"),
+                          models = c("BCST", "BCST_DCST", "BVAR", "BVAR_DCST", "BCST_DVAR"),
                           backbone.option = "crown.shift",
                           multi.backbone = "all",
                           Ncores = 4)
@@ -75,7 +70,7 @@ head(shifts$total)
 
 par(mfrow=c(2,3))
 for(i in 1:6){
-  plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, 
+  plot_phylo_comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, 
                 combi = i, label.offset = 0.1, cex = 0.7, lad = F) 
 }
 
@@ -125,7 +120,7 @@ Plot shifts, diversification rates and paleodiversity over time
 group_colors <- c("#6E4672", "#FF8C01")
 
 # Phylogeny with shifts 
-plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 1, label.offset = 0.1, cex = 0.7, lad = F,
+plot_phylo_comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 1, label.offset = 0.1, cex = 0.7, lad = F,
                 col.sub = group_colors[1], col.bck = group_colors[2], edge.width = 2) 
 axisPhylo() 
 mtext("Time (Ma)", side = 1, line = 2, cex = 1, at = 1.75)
@@ -258,7 +253,7 @@ df_paleo2 <- as.data.frame(paleodiversity2) %>%
 group_colors2 <- c("#DA3541", "#6E4672", "#FF8C01")
 
 # Phylogeny with shifts 
-plot.phylo.comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 2, label.offset = 0.1, cex = 0.7, lad = F,
+plot_phylo_comb(phylo = tree, data = groups, sampling.fractions = sfrac, shift.res = shifts, combi = 2, label.offset = 0.1, cex = 0.7, lad = F,
                 col.sub = group_colors2[1], col.bck = group_colors2[2:3], edge.width = 2) 
 axisPhylo() 
 mtext("Time (Ma)", side = 1, line = 2, cex = 1, at = 1.75)
