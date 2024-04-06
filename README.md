@@ -6,7 +6,7 @@ This repository contains analyses of historical biogeography, host repertoire ev
 
 1)  [**Data_preparation**](http://htmlpreview.github.io/?https://github.com/maribraga/colias_hostrep/blob/main/data_prepare/Data_prepare.html) - prepare data for each analysis (prune and match species included in each data set)
 
-2)  [**Biogeography**](http://htmlpreview.github.io/?https://github.com/maribraga/colias_hostrep/blob/main/biogeography/colias_biogeography.html) - analysis of historical biogeography with the MultiFIG model
+2)  [**Biogeography**](http://htmlpreview.github.io/?https://github.com/maribraga/colias_hostrep/blob/main/biogeography/without_zerene/colias_biogeography.html) - analysis of historical biogeography with the MultiFIG model
 
 3)  [**Diversification**](http://htmlpreview.github.io/?https://github.com/maribraga/colias_hostrep/blob/main/diversification/Colias_RPanda.html) - analysis of shifts in diversification
 
