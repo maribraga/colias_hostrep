@@ -163,8 +163,9 @@ Geodetic CRS:  WGS 84</code></pre>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>geo_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log"</span>)</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>tree_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre"</span>)</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>state_label_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>anc_states_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf"</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plot_2d_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>states_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/states.log"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>anc_states_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf"</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plot_2d_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="parameter-estimates" class="level2">
@@ -447,6 +448,75 @@ sigma_w.1.      1.006       1.04</code></pre>
 </details>
 <div class="cell-output-display">
 <p><img src="colias_biogeography_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="816"></p>
+</div>
+</div>
+<p>Investigating uncertainty around root state</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>states_log <span class="ot">&lt;-</span> <span class="fu">read.table</span>(states_log_file, <span class="at">header =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="fu">c</span>(<span class="st">"131"</span>, <span class="st">"130"</span>, <span class="st">"129"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"end"</span>))</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Root</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>states_131 <span class="ot">&lt;-</span> states_log <span class="sc">%&gt;%</span> </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"end_131"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(end_131) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">freq =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">state =</span> end_131) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(state_labels) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(freq)) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prob =</span> freq<span class="sc">/</span><span class="dv">501</span>,</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">cum_prob =</span> <span class="fu">cumsum</span>(prob))</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>states_131</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 39 × 5
+   state  freq combination                   prob cum_prob
+   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                        &lt;dbl&gt;    &lt;dbl&gt;
+ 1   108   201 EPa+WPa+NAr+PTH+NTr         0.401     0.401
+ 2   120    40 SEA+EPa+WPa+NAr+PTH+NTr     0.0798    0.481
+ 3   125    40 EPa+WPa+NAr+PTH+Afr+NTr     0.0798    0.561
+ 4    84    38 EPa+WPa+PTH+NTr             0.0758    0.637
+ 5    87    35 WPa+NAr+PTH+NTr             0.0699    0.707
+ 6    86    22 EPa+NAr+PTH+NTr             0.0439    0.750
+ 7    67    18 EPa+WPa+NAr+PTH             0.0359    0.786
+ 8   126    11 SEA+EPa+WPa+NAr+PTH+Afr+NTr 0.0220    0.808
+ 9   105     8 SEA+EPa+WPa+PTH+NTr         0.0160    0.824
+10    81     7 EPa+WPa+NAr+NTr             0.0140    0.838
+# ℹ 29 more rows</code></pre>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ancestor of Norther hemisphere clade</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>states_130 <span class="ot">&lt;-</span> states_log <span class="sc">%&gt;%</span> </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"end_130"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(end_130) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">freq =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">state =</span> end_130) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(state_labels) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(freq)) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prob =</span> freq<span class="sc">/</span><span class="dv">501</span>,</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">cum_prob =</span> <span class="fu">cumsum</span>(prob))</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>states_130</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 36 × 5
+   state  freq combination               prob cum_prob
+   &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;
+ 1   108   148 EPa+WPa+NAr+PTH+NTr     0.295     0.295
+ 2    67   140 EPa+WPa+NAr+PTH         0.279     0.575
+ 3    98    29 SEA+EPa+WPa+NAr+PTH     0.0579    0.633
+ 4   120    24 SEA+EPa+WPa+NAr+PTH+NTr 0.0479    0.681
+ 5    34    22 EPa+WPa+PTH             0.0439    0.725
+ 6    37    19 WPa+NAr+PTH             0.0379    0.762
+ 7    84    19 EPa+WPa+PTH+NTr         0.0379    0.800
+ 8   103    16 EPa+WPa+NAr+PTH+Afr     0.0319    0.832
+ 9   125    13 EPa+WPa+NAr+PTH+Afr+NTr 0.0259    0.858
+10    87     8 WPa+NAr+PTH+NTr         0.0160    0.874
+# ℹ 26 more rows</code></pre>
 </div>
 </div>
 </section>

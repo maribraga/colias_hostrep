@@ -68,6 +68,7 @@ log_file2 <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/
 geo_log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log")
 tree_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre")
 state_label_file <- here("biogeography/without_zerene/server_ignore/output/run2/state_labels.txt")
+states_log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/states.log")
 anc_states_file <- here("biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf")
 plot_2d_file <- here("biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf")
 ```
@@ -282,4 +283,38 @@ pie <- plotAncStatesPie(t = states,
 pie
 ```
 
+Investigating uncertainty around root state
+
+```{r}
+states_log <- read.table(states_log_file, header = TRUE) %>% 
+  select(contains(c("131", "130", "129"))) %>% 
+  select(contains("end"))
+
+# Root
+states_131 <- states_log %>% 
+  select("end_131") %>% 
+  group_by(end_131) %>% 
+  summarise(freq = n()) %>% 
+  rename(state = end_131) %>% 
+  left_join(state_labels) %>% 
+  arrange(desc(freq)) %>% 
+  mutate(prob = freq/501,
+         cum_prob = cumsum(prob))
+
+states_131
+
+
+# Ancestor of Norther hemisphere clade
+states_130 <- states_log %>% 
+  select("end_130") %>% 
+  group_by(end_130) %>% 
+  summarise(freq = n()) %>% 
+  rename(state = end_130) %>% 
+  left_join(state_labels) %>% 
+  arrange(desc(freq)) %>% 
+  mutate(prob = freq/501,
+         cum_prob = cumsum(prob))
+
+states_130
+```
 
