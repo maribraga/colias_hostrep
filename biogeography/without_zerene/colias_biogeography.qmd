@@ -318,3 +318,59 @@ states_130 <- states_log %>%
 states_130
 ```
 
+
+## Diversification rates for tip and ancestral ranges
+
+Speciation rates
+
+```{r}
+states_plot <- sort(unique(states@data$end_state_1))
+anc_tip_states <- state_labels %>% filter(combination %in% states_plot)
+lambdas <- paste0("lambda.",anc_tip_states$state,".")
+
+lambda_log <- log2 %>% select(any_of(lambdas))
+
+lambdas_for_plot <- lambda_log %>% pivot_longer(everything(), names_to = "range", values_to = "value") %>% 
+  mutate(n_regions = case_when(range %in% lambdas[1:6] ~ 1,
+                               range %in% lambdas[7:11] ~ 2,
+                               range %in% lambdas[12:14] ~ 3,
+                               range == lambdas[15] ~ 4,
+                               range == lambdas[16] ~ 5))
+
+ggplot(lambdas_for_plot) +
+  geom_density(aes(value, group = range, fill = n_regions, col = n_regions), alpha = 0.3) +
+  labs(color = "Range size",
+       fill = "Range size",
+       x = "Speciation rate",
+       y = "Density") +
+  theme_bw()
+```
+
+Extinction rates
+
+```{r}
+mus <- paste0("mu.",anc_tip_states$state,".")
+mu_log <- log2 %>% select(any_of(mus))
+
+mus_for_plot <- mu_log %>% pivot_longer(everything(), names_to = "range", values_to = "value") %>% 
+  mutate(n_regions = case_when(range %in% mus[1:6] ~ 1,
+                               range %in% mus[7:11] ~ 2,
+                               range %in% mus[12:14] ~ 3,
+                               range == mus[15] ~ 4,
+                               range == mus[16] ~ 5))
+
+ggplot(mus_for_plot) +
+  geom_density(aes(value, group = range, fill = n_regions, col = n_regions), alpha = 0.3) +
+  labs(color = "Range size",
+       fill = "Range size",
+       x = "Extinction rate",
+       y = "Density") +
+  theme_bw()
+
+mus_for_plot %>%
+  group_by(n_regions) %>% 
+  summarise(m = mean(value))
+
+```
+
+

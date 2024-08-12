@@ -520,6 +520,80 @@ sigma_w.1.      1.006       1.04</code></pre>
 </div>
 </div>
 </section>
+<section id="diversification-rates-for-tip-and-ancestral-ranges" class="level2">
+<h2 class="anchored" data-anchor-id="diversification-rates-for-tip-and-ancestral-ranges">Diversification rates for tip and ancestral ranges</h2>
+<p>Speciation rates</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>states_plot <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(states<span class="sc">@</span>data<span class="sc">$</span>end_state_1))</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>anc_tip_states <span class="ot">&lt;-</span> state_labels <span class="sc">%&gt;%</span> <span class="fu">filter</span>(combination <span class="sc">%in%</span> states_plot)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>lambdas <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"lambda."</span>,anc_tip_states<span class="sc">$</span>state,<span class="st">"."</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>lambda_log <span class="ot">&lt;-</span> log2 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">any_of</span>(lambdas))</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>lambdas_for_plot <span class="ot">&lt;-</span> lambda_log <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"range"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n_regions =</span> <span class="fu">case_when</span>(range <span class="sc">%in%</span> lambdas[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>] <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">%in%</span> lambdas[<span class="dv">7</span><span class="sc">:</span><span class="dv">11</span>] <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">%in%</span> lambdas[<span class="dv">12</span><span class="sc">:</span><span class="dv">14</span>] <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">==</span> lambdas[<span class="dv">15</span>] <span class="sc">~</span> <span class="dv">4</span>,</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">==</span> lambdas[<span class="dv">16</span>] <span class="sc">~</span> <span class="dv">5</span>))</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(lambdas_for_plot) <span class="sc">+</span></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(value, <span class="at">group =</span> range, <span class="at">fill =</span> n_regions, <span class="at">col =</span> n_regions), <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">"Range size"</span>,</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Range size"</span>,</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Speciation rate"</span>,</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Density"</span>) <span class="sc">+</span></span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Extinction rates</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mus <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"mu."</span>,anc_tip_states<span class="sc">$</span>state,<span class="st">"."</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>mu_log <span class="ot">&lt;-</span> log2 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">any_of</span>(mus))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>mus_for_plot <span class="ot">&lt;-</span> mu_log <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"range"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n_regions =</span> <span class="fu">case_when</span>(range <span class="sc">%in%</span> mus[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>] <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">%in%</span> mus[<span class="dv">7</span><span class="sc">:</span><span class="dv">11</span>] <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">%in%</span> mus[<span class="dv">12</span><span class="sc">:</span><span class="dv">14</span>] <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">==</span> mus[<span class="dv">15</span>] <span class="sc">~</span> <span class="dv">4</span>,</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>                               range <span class="sc">==</span> mus[<span class="dv">16</span>] <span class="sc">~</span> <span class="dv">5</span>))</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mus_for_plot) <span class="sc">+</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="fu">aes</span>(value, <span class="at">group =</span> range, <span class="at">fill =</span> n_regions, <span class="at">col =</span> n_regions), <span class="at">alpha =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">"Range size"</span>,</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Range size"</span>,</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Extinction rate"</span>,</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Density"</span>) <span class="sc">+</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="colias_biogeography_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>mus_for_plot <span class="sc">%&gt;%</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(n_regions) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">m =</span> <span class="fu">mean</span>(value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 2
+  n_regions      m
+      &lt;dbl&gt;  &lt;dbl&gt;
+1         1 0.0320
+2         2 0     
+3         3 0     
+4         4 0     
+5         5 0     </code></pre>
+</div>
+</div>
+</section>
 </section>
 
 </main>
