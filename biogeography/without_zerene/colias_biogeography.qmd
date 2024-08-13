@@ -132,6 +132,8 @@ for(i in seq_along(sigmas)){
 wrap_plots(list_2d, ncol=2)
 ```
 
+### Effects of area size and ditance between regions.
+
 ```{r}
 # calculate joint pp
 
@@ -185,6 +187,65 @@ trace_w %>%
   group_by(joint_p) %>% 
   summarise(n = n()/nrow(.))
 ```
+
+
+### Effects of altitude
+
+
+```{r}
+# calculate joint pp
+
+trace_d_alt <- trace[[1]] %>% 
+  dplyr::select(Iteration, `phi_d[2]`, `sigma_d[2]`) %>% 
+  mutate(joint_p = case_when(`phi_d[2]` >= 0 & `sigma_d[2]` >= 0 ~ "both_positive",
+                             TRUE ~ "one_or_both_negative"))
+trace_e_alt <- trace[[1]] %>% 
+  dplyr::select(Iteration, `phi_e[2]`, `sigma_e[2]`) %>% 
+  mutate(joint_p = case_when(`phi_e[2]` >= 0 & `sigma_e[2]` >= 0 ~ "both_positive",
+                             TRUE ~ "one_or_both_negative"))
+trace_b_alt <- trace[[1]] %>% 
+  dplyr::select(Iteration, `phi_b[2]`, `sigma_b[2]`) %>% 
+  mutate(joint_p = case_when(`phi_b[2]` >= 0 & `sigma_b[2]` >= 0 ~ "both_positive",
+                             TRUE ~ "one_or_both_negative"))
+trace_w_alt <- trace[[1]] %>% 
+  dplyr::select(Iteration, `phi_w[2]`, `sigma_w[2]`) %>% 
+  mutate(joint_p = case_when(`phi_w[2]` >= 0 & `sigma_w[2]` >= 0 ~ "both_positive",
+                             TRUE ~ "one_or_both_negative"))
+```
+
+  
+Effect of distance between areas on dispersal
+
+```{r}
+trace_d_alt %>% 
+  group_by(joint_p) %>% 
+  summarise(n = n()/nrow(.))
+```
+
+Effect of area size on extinction
+
+```{r}
+trace_e_alt %>% 
+  group_by(joint_p) %>% 
+  summarise(n = n()/nrow(.))
+```
+
+Effect of distance on between-region speciation
+
+```{r}
+trace_b_alt %>% 
+  group_by(joint_p) %>% 
+  summarise(n = n()/nrow(.))
+```
+
+Effect of area size on within-region speciation
+
+```{r}
+trace_w_alt %>% 
+  group_by(joint_p) %>% 
+  summarise(n = n()/nrow(.))
+```
+
 
 
 Posterior distribution of individual parameters (Supplementary)
@@ -303,7 +364,6 @@ states_131 <- states_log %>%
 
 states_131
 
-
 # Ancestor of Norther hemisphere clade
 states_130 <- states_log %>% 
   select("end_130") %>% 
@@ -316,6 +376,14 @@ states_130 <- states_log %>%
          cum_prob = cumsum(prob))
 
 states_130
+
+```
+
+```{r}
+#| echo: false
+#| eval: false
+write.csv(states_131, here("biogeography/without_zerene/supp_ignore/posterior_node_131.csv"), row.names = FALSE)
+write.csv(states_130, here("biogeography/without_zerene/supp_ignore/posterior_node_130.csv"), row.names = FALSE)
 ```
 
 
