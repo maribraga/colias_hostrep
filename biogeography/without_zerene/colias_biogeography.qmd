@@ -63,12 +63,12 @@ ggplot(bioregions) +
 Determine paths of output files from RevBayes MULTIFIG analysis and to save figures.
 
 ```{r}
-log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run1/model.log")
-log_file2 <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/model.log")
-geo_log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log")
-tree_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre")
+log_file <- here("biogeography/without_zerene/server_ignore/output/altmean/run1/model.log")
+log_file2 <- here("biogeography/without_zerene/server_ignore/output/altmean/run2/model.log")
+geo_log_file <- here("biogeography/without_zerene/server_ignore/output/altmean/run2/geo_features.log")
+tree_file <- here("biogeography/without_zerene/server_ignore/output/altmean/run2/ase.tre")
 state_label_file <- here("biogeography/without_zerene/server_ignore/output/run2/state_labels.txt")
-states_log_file <- here("biogeography/without_zerene/server_ignore/output/altvar/run2/states.log")
+states_log_file <- here("biogeography/without_zerene/server_ignore/output/altmean/run2/states.log")
 anc_states_file <- here("biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf")
 plot_2d_file <- here("biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf")
 ```
@@ -281,7 +281,7 @@ area_codes <- rep(1, ncol(range_matrix))
 names(area_codes) <- colnames(range_matrix)
 area_codes
 
-state_labels <- read.csv(here("biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"), 
+state_labels <- read.csv(here("biogeography/without_zerene/server_ignore/output/altmean/run2/state_labels.txt"), 
                          colClasses = c("numeric","character")) %>% 
   separate_wider_position(range, widths = area_codes) %>% 
   pivot_longer(2:8, names_to = "area", values_to = "present") %>% 

@@ -158,12 +158,12 @@ Geodetic CRS:  WGS 84</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run1/model.log"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>log_file2 <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/model.log"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>geo_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/geo_features.log"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>tree_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/ase.tre"</span>)</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run1/model.log"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>log_file2 <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run2/model.log"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>geo_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run2/geo_features.log"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>tree_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run2/ase.tre"</span>)</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>state_label_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>states_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altvar/run2/states.log"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>states_log_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run2/states.log"</span>)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>anc_states_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/anc_states.pdf"</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plot_2d_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/2d_plots.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -188,19 +188,19 @@ Geodetic CRS:  WGS 84</code></pre>
 <pre><code>Potential scale reduction factors:
 
            Point est. Upper C.I.
-lambda.1.       1.007       1.02
-m_w.1..1.       1.050       1.09
-mu.3.           1.019       1.03
-phi_b.2.        1.011       1.04
-phi_d.1.        1.001       1.01
-phi_e.2.        1.008       1.01
-phi_w.1.        0.999       1.00
-r_e.3.          1.019       1.03
-rho_b           1.002       1.01
-sigma_b.1.      1.001       1.00
-sigma_d.2.      1.006       1.03
-sigma_e.1.      1.000       1.01
-sigma_w.1.      1.006       1.04</code></pre>
+lambda.1.       1.007      1.014
+m_w.1..1.       1.192      1.385
+mu.3.           1.013      1.035
+phi_b.2.        1.003      1.020
+phi_d.1.        1.000      1.002
+phi_e.2.        1.011      1.013
+phi_w.1.        1.002      1.011
+r_e.3.          1.013      1.035
+rho_b           0.998      0.998
+sigma_b.1.      1.009      1.038
+sigma_d.2.      1.002      1.018
+sigma_e.1.      1.006      1.038
+sigma_w.1.      1.010      1.048</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -208,9 +208,9 @@ sigma_w.1.      1.006       1.04</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> lambda.1.  m_w.1..1.      mu.3.   phi_b.2.   phi_d.1.   phi_e.2.   phi_w.1. 
- 351.70618   89.90557  450.00000  450.00000  450.00000  326.73027  450.00000 
+  450.0000   111.7976   450.0000   450.0000   450.0000   450.0000   531.3009 
     r_e.3.      rho_b sigma_b.1. sigma_d.2. sigma_e.1. sigma_w.1. 
- 450.00000  362.17126  450.00000  266.63352  450.00000  216.84123 </code></pre>
+  450.0000   315.1114   450.0000   256.4816   363.8716   136.4956 </code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -218,9 +218,9 @@ sigma_w.1.      1.006       1.04</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> lambda.1.  m_w.1..1.      mu.3.   phi_b.2.   phi_d.1.   phi_e.2.   phi_w.1. 
-  536.6021   155.2168   544.8810   450.0000   478.2161   450.0000   386.1634 
+  450.0000   100.3746   386.1065   369.2990   541.5207   309.8720   744.9035 
     r_e.3.      rho_b sigma_b.1. sigma_d.2. sigma_e.1. sigma_w.1. 
-  544.8810   368.4646   365.2751   258.3136   328.1960   158.6367 </code></pre>
+  386.1065   335.5523   389.5816   304.8829   386.4297   169.0328 </code></pre>
 </div>
 </div>
 <p>Because there is one categorical and one quantitative parameter for each feature (e.g.&nbsp;area, distance, and altitude), we will look at the joint probability for each pair of parameters that correspond to the effect of the same feature over the same process (e.g.&nbsp;dispersal, extinction, between-region speciation and within-region speciation).</p>
@@ -295,10 +295,10 @@ sigma_w.1.      1.006       1.04</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
-  joint_p                    n
-  &lt;chr&gt;                  &lt;dbl&gt;
-1 both_positive        0.00889
-2 one_or_both_negative 0.991  </code></pre>
+  joint_p                   n
+  &lt;chr&gt;                 &lt;dbl&gt;
+1 both_positive        0.0111
+2 one_or_both_negative 0.989 </code></pre>
 </div>
 </div>
 <p>Effect of area size on extinction</p>
@@ -313,8 +313,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                   n
   &lt;chr&gt;                 &lt;dbl&gt;
-1 both_positive        0.0667
-2 one_or_both_negative 0.933 </code></pre>
+1 both_positive        0.0489
+2 one_or_both_negative 0.951 </code></pre>
 </div>
 </div>
 <p>Effect of distance on between-region speciation</p>
@@ -345,8 +345,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                  n
   &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.287
-2 one_or_both_negative 0.713</code></pre>
+1 both_positive        0.202
+2 one_or_both_negative 0.798</code></pre>
 </div>
 </div>
 </section>
@@ -387,8 +387,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                  n
   &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.231
-2 one_or_both_negative 0.769</code></pre>
+1 both_positive         0.18
+2 one_or_both_negative  0.82</code></pre>
 </div>
 </div>
 <p>Effect of area size on extinction</p>
@@ -403,8 +403,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                  n
   &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.182
-2 one_or_both_negative 0.818</code></pre>
+1 both_positive        0.187
+2 one_or_both_negative 0.813</code></pre>
 </div>
 </div>
 <p>Effect of distance on between-region speciation</p>
@@ -419,8 +419,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                  n
   &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.238
-2 one_or_both_negative 0.762</code></pre>
+1 both_positive        0.244
+2 one_or_both_negative 0.756</code></pre>
 </div>
 </div>
 <p>Effect of area size on within-region speciation</p>
@@ -435,8 +435,8 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 2 × 2
   joint_p                  n
   &lt;chr&gt;                &lt;dbl&gt;
-1 both_positive        0.378
-2 one_or_both_negative 0.622</code></pre>
+1 both_positive        0.304
+2 one_or_both_negative 0.696</code></pre>
 </div>
 </div>
 <p>Posterior distribution of individual parameters (Supplementary)</p>
@@ -494,7 +494,7 @@ sigma_w.1.      1.006       1.04</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>state_labels <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/run2/state_labels.txt"</span>), </span>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>state_labels <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"biogeography/without_zerene/server_ignore/output/altmean/run2/state_labels.txt"</span>), </span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">colClasses =</span> <span class="fu">c</span>(<span class="st">"numeric"</span>,<span class="st">"character"</span>)) <span class="sc">%&gt;%</span> </span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_position</span>(range, <span class="at">widths =</span> area_codes) <span class="sc">%&gt;%</span> </span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>, <span class="at">names_to =</span> <span class="st">"area"</span>, <span class="at">values_to =</span> <span class="st">"present"</span>) <span class="sc">%&gt;%</span> </span>
@@ -565,20 +565,20 @@ sigma_w.1.      1.006       1.04</code></pre>
 <span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>states_131</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 39 × 5
+<pre><code># A tibble: 42 × 5
    state  freq combination                   prob cum_prob
    &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                        &lt;dbl&gt;    &lt;dbl&gt;
- 1   108   201 EPa+WPa+NAr+PTH+NTr         0.401     0.401
- 2   120    40 SEA+EPa+WPa+NAr+PTH+NTr     0.0798    0.481
- 3   125    40 EPa+WPa+NAr+PTH+Afr+NTr     0.0798    0.561
- 4    84    38 EPa+WPa+PTH+NTr             0.0758    0.637
- 5    87    35 WPa+NAr+PTH+NTr             0.0699    0.707
- 6    86    22 EPa+NAr+PTH+NTr             0.0439    0.750
- 7    67    18 EPa+WPa+NAr+PTH             0.0359    0.786
- 8   126    11 SEA+EPa+WPa+NAr+PTH+Afr+NTr 0.0220    0.808
- 9   105     8 SEA+EPa+WPa+PTH+NTr         0.0160    0.824
-10    81     7 EPa+WPa+NAr+NTr             0.0140    0.838
-# ℹ 29 more rows</code></pre>
+ 1   108   183 EPa+WPa+NAr+PTH+NTr         0.365     0.365
+ 2   120    46 SEA+EPa+WPa+NAr+PTH+NTr     0.0918    0.457
+ 3   125    45 EPa+WPa+NAr+PTH+Afr+NTr     0.0898    0.547
+ 4    84    35 EPa+WPa+PTH+NTr             0.0699    0.617
+ 5    87    30 WPa+NAr+PTH+NTr             0.0599    0.677
+ 6    86    26 EPa+NAr+PTH+NTr             0.0519    0.729
+ 7    67    13 EPa+WPa+NAr+PTH             0.0259    0.754
+ 8   115    12 EPa+WPa+PTH+Afr+NTr         0.0240    0.778
+ 9   126    11 SEA+EPa+WPa+NAr+PTH+Afr+NTr 0.0220    0.800
+10   105    10 SEA+EPa+WPa+PTH+NTr         0.0200    0.820
+# ℹ 32 more rows</code></pre>
 </div>
 <details>
 <summary>Show the code</summary>
@@ -599,16 +599,16 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 36 × 5
    state  freq combination               prob cum_prob
    &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;
- 1   108   148 EPa+WPa+NAr+PTH+NTr     0.295     0.295
- 2    67   140 EPa+WPa+NAr+PTH         0.279     0.575
- 3    98    29 SEA+EPa+WPa+NAr+PTH     0.0579    0.633
- 4   120    24 SEA+EPa+WPa+NAr+PTH+NTr 0.0479    0.681
- 5    34    22 EPa+WPa+PTH             0.0439    0.725
- 6    37    19 WPa+NAr+PTH             0.0379    0.762
- 7    84    19 EPa+WPa+PTH+NTr         0.0379    0.800
- 8   103    16 EPa+WPa+NAr+PTH+Afr     0.0319    0.832
- 9   125    13 EPa+WPa+NAr+PTH+Afr+NTr 0.0259    0.858
-10    87     8 WPa+NAr+PTH+NTr         0.0160    0.874
+ 1    67   155 EPa+WPa+NAr+PTH         0.309     0.309
+ 2   108   107 EPa+WPa+NAr+PTH+NTr     0.214     0.523
+ 3   125    27 EPa+WPa+NAr+PTH+Afr+NTr 0.0539    0.577
+ 4    98    26 SEA+EPa+WPa+NAr+PTH     0.0519    0.629
+ 5   103    26 EPa+WPa+NAr+PTH+Afr     0.0519    0.681
+ 6   120    23 SEA+EPa+WPa+NAr+PTH+NTr 0.0459    0.727
+ 7    34    19 EPa+WPa+PTH             0.0379    0.764
+ 8    84    18 EPa+WPa+PTH+NTr         0.0359    0.800
+ 9    87    12 WPa+NAr+PTH+NTr         0.0240    0.824
+10    37     9 WPa+NAr+PTH             0.0180    0.842
 # ℹ 26 more rows</code></pre>
 </div>
 </div>
@@ -679,7 +679,7 @@ sigma_w.1.      1.006       1.04</code></pre>
 <pre><code># A tibble: 5 × 2
   n_regions      m
       &lt;dbl&gt;  &lt;dbl&gt;
-1         1 0.0320
+1         1 0.0329
 2         2 0     
 3         3 0     
 4         4 0     
