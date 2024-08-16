@@ -151,8 +151,8 @@ trace_b <- trace[[1]] %>%
                              TRUE ~ "one_or_both_negative"))
 trace_w <- trace[[1]] %>% 
   dplyr::select(Iteration, `phi_w[1]`, `sigma_w[1]`) %>% 
-  mutate(joint_p = case_when(`phi_w[1]` >= 0 & `sigma_w[1]` >= 0 ~ "both_positive",
-                             TRUE ~ "one_or_both_negative"))
+  mutate(joint_p = case_when(`phi_w[1]` <= 0 & `sigma_w[1]` <= 0 ~ "both_negative",
+                             TRUE ~ "one_or_both_positive"))
 ```
 
   
@@ -201,16 +201,18 @@ trace_d_alt <- trace[[1]] %>%
                              TRUE ~ "one_or_both_negative"))
 trace_e_alt <- trace[[1]] %>% 
   dplyr::select(Iteration, `phi_e[2]`, `sigma_e[2]`) %>% 
-  mutate(joint_p = case_when(`phi_e[2]` >= 0 & `sigma_e[2]` >= 0 ~ "both_positive",
-                             TRUE ~ "one_or_both_negative"))
+  mutate(joint_p = case_when(`phi_e[2]` <= 0 & `sigma_e[2]` <= 0 ~ "both_negative",
+                             TRUE ~ "one_or_both_positive"))
+ 
 trace_b_alt <- trace[[1]] %>% 
   dplyr::select(Iteration, `phi_b[2]`, `sigma_b[2]`) %>% 
-  mutate(joint_p = case_when(`phi_b[2]` >= 0 & `sigma_b[2]` >= 0 ~ "both_positive",
-                             TRUE ~ "one_or_both_negative"))
+  mutate(joint_p = case_when(`phi_b[2]` <= 0 & `sigma_b[2]` <= 0 ~ "both_negative",
+                             TRUE ~ "one_or_both_positive"))
+ 
 trace_w_alt <- trace[[1]] %>% 
   dplyr::select(Iteration, `phi_w[2]`, `sigma_w[2]`) %>% 
-  mutate(joint_p = case_when(`phi_w[2]` >= 0 & `sigma_w[2]` >= 0 ~ "both_positive",
-                             TRUE ~ "one_or_both_negative"))
+  mutate(joint_p = case_when(`phi_w[2]` <= 0 & `sigma_w[2]` <= 0 ~ "both_negative",
+                             TRUE ~ "one_or_both_positive"))
 ```
 
   
